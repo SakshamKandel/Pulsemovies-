@@ -59,7 +59,7 @@ export default async function WatchTVPage({ params, searchParams }: Props) {
     const currentEpisode = seasonDetails?.episodes?.find((e: any) => e.episode_number === episodeNumber);
 
     // Find the first logo in English or null language
-    const logo = show.images?.logos?.find(
+    const logo = (show as any).images?.logos?.find(
         (img: any) => img.iso_639_1 === 'en' || img.iso_639_1 === null
     );
 
