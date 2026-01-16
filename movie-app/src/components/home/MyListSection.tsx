@@ -9,7 +9,7 @@ import { getImageUrl, getContentTitle } from '@/lib/utils';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
 
 export function MyListSection() {
-    const { watchlist, removeFromWatchlist } = useWatchlistStore();
+    const { items: watchlist, removeFromWatchlist } = useWatchlistStore();
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {

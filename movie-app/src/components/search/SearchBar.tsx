@@ -26,11 +26,11 @@ export function SearchBar() {
     const router = useRouter();
     const { setSearchOpen } = useUIStore();
     const [query, setQuery] = React.useState('');
-    const [results, setResults] = React.useState<(Movie | TVShow | Person)[]>([]);
+    const [results, setResults] = React.useState<(Movie | TVShow)[]>([]);
     const [isLoading, setIsLoading] = React.useState(false);
     const [showResults, setShowResults] = React.useState(false);
     const inputRef = React.useRef<HTMLInputElement>(null);
-    const debounceRef = React.useRef<NodeJS.Timeout>();
+    const debounceRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
 
     // Focus input on mount
     React.useEffect(() => {
