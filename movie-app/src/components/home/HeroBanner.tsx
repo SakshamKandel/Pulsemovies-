@@ -19,8 +19,13 @@ interface HeroBannerProps {
 
 export function HeroBanner({ movies, className }: HeroBannerProps) {
     const [currentIndex, setCurrentIndex] = React.useState(0);
+    const [mounted, setMounted] = React.useState(false);
 
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const featuredMovies = movies.slice(0, 5);
     const currentMovie = featuredMovies[currentIndex];
@@ -39,7 +44,7 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
     if (!currentMovie) return null;
 
     const backdropUrl = getImageUrl(currentMovie.backdrop_path, 'original', 'backdrop');
-    const inWatchlist = isInWatchlist(currentMovie.id);
+    const inWatchlist = mounted && isInWatchlist(currentMovie.id);
     const genres = currentMovie.genre_ids.slice(0, 3).map(id => MOVIE_GENRES[id]).filter(Boolean);
     const year = formatYear(currentMovie.release_date);
 
