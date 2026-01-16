@@ -57,15 +57,15 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
     };
 
     return (
-        <div className={cn('relative h-[65vh] min-h-[500px] w-full overflow-hidden pt-16', className)}>
+        <div className={cn('relative h-[85vh] w-full overflow-hidden', className)}>
             {/* Background Image */}
             <AnimatePresence mode="wait">
                 <motion.div
                     key={currentMovie.id}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8 }}
                     className="absolute inset-0"
                 >
                     <Image
@@ -78,15 +78,17 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                 </motion.div>
             </AnimatePresence>
 
-            {/* Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+            {/* Cinematic Gradient Overlays - "Spotlight" effect */}
+            {/* Left fade for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent" />
+            {/* Bottom fade for transition to content */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-            {/* Content */}
-            <div className="absolute inset-0 flex items-end pb-12 md:pb-24">
+            {/* Content Container */}
+            <div className="absolute inset-0 flex items-center">
                 <div className="container mx-auto px-4 md:px-8">
-                    <div className="max-w-2xl space-y-4">
-                        {/* Title */}
+                    <div className="max-w-xl space-y-6 pt-20">
+                        {/* Title - Clean & Big */}
                         <AnimatePresence mode="wait">
                             {currentMovie.images?.logos?.[0] ? (
                                 <motion.div
@@ -95,7 +97,7 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ duration: 0.5 }}
-                                    className="relative h-12 md:h-20 lg:h-24 w-full max-w-sm mb-2"
+                                    className="relative h-24 md:h-32 w-full max-w-sm"
                                 >
                                     <Image
                                         src={getImageUrl(currentMovie.images.logos[0].file_path, 'original', 'logo')}
@@ -112,106 +114,100 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ duration: 0.5 }}
-                                    className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight"
+                                    className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-none"
                                 >
                                     {currentMovie.title}
                                 </motion.h1>
                             )}
                         </AnimatePresence>
 
-                        {/* Meta Info */}
+                        {/* Metadata Pills */}
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={`meta-${currentMovie.id}`}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="flex flex-wrap items-center gap-3 text-sm text-text-secondary"
+                                className="flex flex-wrap items-center gap-3"
                             >
-                                <span className="px-2 py-1 bg-accent-primary text-white text-sm font-medium rounded">
-                                    ★ {currentMovie.vote_average.toFixed(1)}
-                                </span>
-                                <span>{year}</span>
-                                <span className="hidden md:inline">•</span>
-                                <span className="hidden md:inline">{genres.join(' • ')}</span>
+                                <div className="flex items-center gap-2 px-3 py-1 bg-yellow-400/10 border border-yellow-400/20 rounded-full backdrop-blur-sm">
+                                    <span className="text-yellow-400 text-sm font-bold">★ {currentMovie.vote_average.toFixed(1)}</span>
+                                </div>
+                                <div className="px-3 py-1 bg-white/10 border border-white/10 rounded-full backdrop-blur-sm">
+                                    <span className="text-white text-sm font-medium">{year}</span>
+                                </div>
+                                {genres.map((genre, i) => (
+                                    <div key={i} className="px-3 py-1 bg-white/5 border border-white/5 rounded-full backdrop-blur-sm">
+                                        <span className="text-gray-200 text-xs font-medium">{genre}</span>
+                                    </div>
+                                ))}
                             </motion.div>
                         </AnimatePresence>
 
-                        {/* Overview */}
+                        {/* Overview - Constrained width */}
                         <AnimatePresence mode="wait">
                             <motion.p
                                 key={`desc-${currentMovie.id}`}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="text-text-secondary text-base leading-normal line-clamp-3"
+                                className="text-gray-300 text-base md:text-lg leading-relaxed line-clamp-3 max-w-lg"
                             >
-                                {truncateText(currentMovie.overview, 250)}
+                                {truncateText(currentMovie.overview, 200)}
                             </motion.p>
                         </AnimatePresence>
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-3 pt-2">
+                        {/* Cineby Style Buttons */}
+                        <div className="flex flex-wrap items-center gap-4 pt-2">
                             <Link href={`/movie/${currentMovie.id}/watch`}>
-                                <Button
-                                    variant="primary"
-                                    size="md"
-                                    leftIcon={<Play className="w-5 h-5 fill-current" />}
-                                >
-                                    Watch Now
-                                </Button>
+                                <button className="flex items-center gap-2 px-8 py-3 bg-white text-black rounded-lg font-bold hover:bg-gray-200 transition-colors active:scale-95">
+                                    <Play className="w-5 h-5 fill-current" />
+                                    <span>Play</span>
+                                </button>
                             </Link>
+
                             <Link href={`/movie/${currentMovie.id}`}>
-                                <Button
-                                    variant="secondary"
-                                    size="md"
-                                    leftIcon={<Info className="w-5 h-5" />}
-                                >
-                                    More Info
-                                </Button>
+                                <button className="flex items-center gap-2 px-6 py-3 bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-lg font-medium hover:bg-white/20 transition-colors active:scale-95">
+                                    <Info className="w-5 h-5" />
+                                    <span>See More</span>
+                                </button>
                             </Link>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleWatchlistToggle}
-                                className="w-12 h-12 rounded-full border border-border"
-                            >
-                                {inWatchlist ? (
-                                    <Check className="w-5 h-5" />
-                                ) : (
-                                    <Plus className="w-5 h-5" />
-                                )}
-                            </Button>
+
+                            {/* Watchlist Toggle - Minimalist Circle */}
+                            {mounted && (
+                                <button
+                                    onClick={handleWatchlistToggle}
+                                    className="flex items-center justify-center w-12 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm text-white hover:bg-white/10 transition-colors active:scale-95"
+                                >
+                                    {inWatchlist ? (
+                                        <Check className="w-5 h-5" />
+                                    ) : (
+                                        <Plus className="w-5 h-5" />
+                                    )}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Carousel Indicators */}
-            {
-                featuredMovies.length > 1 && (
-                    <div className="absolute bottom-8 right-8 flex items-center gap-4">
-                        {/* Dots */}
-                        <div className="flex gap-2">
-                            {featuredMovies.map((_, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => setCurrentIndex(index)}
-                                    className={cn(
-                                        'w-12 h-1 rounded-full transition-all duration-300',
-                                        index === currentIndex
-                                            ? 'bg-accent-primary'
-                                            : 'bg-white/30 hover:bg-white/50'
-                                    )}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                )
-            }
-
-            {/* Bottom Gradient Fade */}
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
-        </div >
+            {/* Carousel Indicators - Refined */}
+            {featuredMovies.length > 1 && (
+                <div className="absolute right-8 bottom-1/3 flex flex-col gap-3">
+                    {featuredMovies.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentIndex(index)}
+                            className={cn(
+                                'w-1.5 h-1.5 rounded-full transition-all duration-300',
+                                index === currentIndex
+                                    ? 'h-8 bg-accent-primary'
+                                    : 'bg-white/50 hover:bg-white'
+                            )}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
     );
 }
