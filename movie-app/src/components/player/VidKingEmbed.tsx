@@ -88,7 +88,6 @@ export function PlayerEmbed({
                         WebkitOverflowScrolling: 'touch',
                         touchAction: 'manipulation'
                     }}
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-pointer-lock"
                 />
             </div>
         </div>
