@@ -77,6 +77,12 @@ export interface TVShowDetails extends Omit<TVShow, 'genre_ids'> {
     videos?: VideoResults;
     similar?: TVShowListResponse;
     recommendations?: TVShowListResponse;
+    images?: {
+        logos: {
+            file_path: string;
+            iso_639_1: string | null;
+        }[];
+    };
 }
 
 export interface Genre {
