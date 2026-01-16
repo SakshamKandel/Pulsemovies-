@@ -118,11 +118,11 @@ export function MovieCarousel({
                 </h2>
 
                 <div className="flex items-center gap-3">
-                    {/* Navigation Arrows */}
+                    {/* Navigation Arrows - Hidden on Mobile */}
                     <button
                         onClick={() => scroll('left')}
                         className={cn(
-                            'p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors',
+                            'hidden md:block p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors',
                             !canScrollLeft && 'opacity-30 pointer-events-none'
                         )}
                     >
@@ -131,7 +131,7 @@ export function MovieCarousel({
                     <button
                         onClick={() => scroll('right')}
                         className={cn(
-                            'p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors',
+                            'hidden md:block p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors',
                             !canScrollRight && 'opacity-30 pointer-events-none'
                         )}
                     >

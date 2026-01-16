@@ -57,7 +57,8 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
     };
 
     return (
-        <div className={cn('relative h-[85vh] w-full overflow-hidden', className)}>
+    return (
+        <div className={cn('relative h-[65vh] md:h-[85vh] min-h-[550px] w-full overflow-hidden', className)}>
             {/* Background Image */}
             <AnimatePresence mode="wait">
                 <motion.div
@@ -78,16 +79,18 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                 </motion.div>
             </AnimatePresence>
 
-            {/* Cinematic Gradient Overlays - "Spotlight" effect */}
-            {/* Left fade for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent" />
-            {/* Bottom fade for transition to content */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+            {/* Cinematic Gradient Overlays */}
+            {/* Stronger bottom gradient for mobile text readability */}
+            <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background via-background/60 to-transparent md:hidden" />
+
+            {/* Desktop gradients (Sidebar spotlight effect) */}
+            <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent" />
+            <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
             {/* Content Container */}
-            <div className="absolute inset-0 flex items-center">
+            <div className="absolute inset-0 flex items-center mb-12 md:mb-0">
                 <div className="container mx-auto px-4 md:px-8">
-                    <div className="max-w-xl space-y-6 pt-20">
+                    <div className="max-w-xl space-y-4 md:space-y-6 pt-20 md:pt-20">
                         {/* Title - Clean & Big */}
                         <AnimatePresence mode="wait">
                             {currentMovie.images?.logos?.[0] ? (
@@ -97,7 +100,7 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ duration: 0.5 }}
-                                    className="relative h-24 md:h-32 w-full max-w-sm"
+                                    className="relative h-20 md:h-32 w-full max-w-[280px] md:max-w-sm"
                                 >
                                     <Image
                                         src={getImageUrl(currentMovie.images.logos[0].file_path, 'original', 'logo')}
@@ -114,7 +117,7 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ duration: 0.5 }}
-                                    className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-none"
+                                    className="text-3xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-none"
                                 >
                                     {currentMovie.title}
                                 </motion.h1>
@@ -128,17 +131,17 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="flex flex-wrap items-center gap-3"
+                                className="flex flex-wrap items-center gap-2 md:gap-3"
                             >
-                                <div className="flex items-center gap-2 px-3 py-1 bg-yellow-400/10 border border-yellow-400/20 rounded-full backdrop-blur-sm">
-                                    <span className="text-yellow-400 text-sm font-bold">★ {currentMovie.vote_average.toFixed(1)}</span>
+                                <div className="flex items-center gap-2 px-2.5 py-0.5 md:px-3 md:py-1 bg-yellow-400/10 border border-yellow-400/20 rounded-full backdrop-blur-sm">
+                                    <span className="text-yellow-400 text-xs md:text-sm font-bold">★ {currentMovie.vote_average.toFixed(1)}</span>
                                 </div>
-                                <div className="px-3 py-1 bg-white/10 border border-white/10 rounded-full backdrop-blur-sm">
-                                    <span className="text-white text-sm font-medium">{year}</span>
+                                <div className="px-2.5 py-0.5 md:px-3 md:py-1 bg-white/10 border border-white/10 rounded-full backdrop-blur-sm">
+                                    <span className="text-white text-xs md:text-sm font-medium">{year}</span>
                                 </div>
                                 {genres.map((genre, i) => (
-                                    <div key={i} className="px-3 py-1 bg-white/5 border border-white/5 rounded-full backdrop-blur-sm">
-                                        <span className="text-gray-200 text-xs font-medium">{genre}</span>
+                                    <div key={i} className="px-2.5 py-0.5 md:px-3 md:py-1 bg-white/5 border border-white/5 rounded-full backdrop-blur-sm">
+                                        <span className="text-gray-200 text-[10px] md:text-xs font-medium">{genre}</span>
                                     </div>
                                 ))}
                             </motion.div>
@@ -151,24 +154,34 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="text-gray-300 text-base md:text-lg leading-relaxed line-clamp-3 max-w-lg"
+                                className="text-gray-300 text-sm md:text-lg leading-relaxed line-clamp-3 md:line-clamp-4 max-w-lg hidden md:block"
                             >
                                 {truncateText(currentMovie.overview, 200)}
+                            </motion.p>
+                            {/* Mobile short overview */}
+                            <motion.p
+                                key={`desc-mobile-${currentMovie.id}`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="text-gray-300 text-sm leading-relaxed line-clamp-2 md:hidden"
+                            >
+                                {truncateText(currentMovie.overview, 100)}
                             </motion.p>
                         </AnimatePresence>
 
                         {/* Cineby Style Buttons */}
-                        <div className="flex flex-wrap items-center gap-4 pt-2">
+                        <div className="flex flex-wrap items-center gap-3 md:gap-4 pt-2">
                             <Link href={`/movie/${currentMovie.id}/watch`}>
-                                <button className="flex items-center gap-2 px-8 py-3 bg-white text-black rounded-lg font-bold hover:bg-gray-200 transition-colors active:scale-95">
-                                    <Play className="w-5 h-5 fill-current" />
+                                <button className="flex items-center gap-2 px-6 py-2.5 md:px-8 md:py-3 bg-white text-black rounded-lg font-bold text-sm md:text-base hover:bg-gray-200 transition-colors active:scale-95">
+                                    <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
                                     <span>Play</span>
                                 </button>
                             </Link>
 
                             <Link href={`/movie/${currentMovie.id}`}>
-                                <button className="flex items-center gap-2 px-6 py-3 bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-lg font-medium hover:bg-white/20 transition-colors active:scale-95">
-                                    <Info className="w-5 h-5" />
+                                <button className="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-lg font-medium text-sm md:text-base hover:bg-white/20 transition-colors active:scale-95">
+                                    <Info className="w-4 h-4 md:w-5 md:h-5" />
                                     <span>See More</span>
                                 </button>
                             </Link>
@@ -177,12 +190,12 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                             {mounted && (
                                 <button
                                     onClick={handleWatchlistToggle}
-                                    className="flex items-center justify-center w-12 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm text-white hover:bg-white/10 transition-colors active:scale-95"
+                                    className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm text-white hover:bg-white/10 transition-colors active:scale-95"
                                 >
                                     {inWatchlist ? (
-                                        <Check className="w-5 h-5" />
+                                        <Check className="w-4 h-4 md:w-5 md:h-5" />
                                     ) : (
-                                        <Plus className="w-5 h-5" />
+                                        <Plus className="w-4 h-4 md:w-5 md:h-5" />
                                     )}
                                 </button>
                             )}
@@ -191,9 +204,9 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                 </div>
             </div>
 
-            {/* Carousel Indicators - Refined */}
+            {/* Carousel Indicators - Refined & Hidden on Mobile */}
             {featuredMovies.length > 1 && (
-                <div className="absolute right-8 bottom-1/3 flex flex-col gap-3">
+                <div className="hidden md:flex absolute right-8 bottom-1/3 flex-col gap-3">
                     {featuredMovies.map((_, index) => (
                         <button
                             key={index}
