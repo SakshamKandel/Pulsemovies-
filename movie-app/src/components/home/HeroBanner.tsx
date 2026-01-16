@@ -89,8 +89,8 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
 
             {/* Content Container */}
             <div className="absolute inset-0 flex items-end mb-0">
-                <div className="container mx-auto px-4 md:px-8 pb-20 md:pb-24">
-                    <div className="max-w-xl md:max-w-2xl space-y-4 md:space-y-6 pr-12 md:pr-0">
+                <div className="container mx-auto px-4 md:px-8 pb-28 md:pb-32">
+                    <div className="max-w-xl md:max-w-2xl space-y-4 md:space-y-6 pr-12 md:pr-16">
                         {/* Title - Clean & Big */}
                         <AnimatePresence mode="wait">
                             {currentMovie.images?.logos?.[0] ? (
@@ -206,7 +206,7 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
 
             {/* Carousel Indicators - Refined & Hidden on Mobile */}
             {featuredMovies.length > 1 && (
-                <div className="hidden md:flex absolute right-8 bottom-1/3 flex-col gap-3">
+                <div className="hidden md:flex absolute right-8 bottom-1/2 transform translate-y-1/2 flex-col gap-3">
                     {featuredMovies.map((_, index) => (
                         <button
                             key={index}
