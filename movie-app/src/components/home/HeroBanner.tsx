@@ -4,7 +4,7 @@ import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Info, Plus, Check, Volume2, VolumeX } from 'lucide-react';
+import { Play, Info, Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getImageUrl, truncateText, formatYear } from '@/lib/utils';
 import { MOVIE_GENRES } from '@/lib/constants';
@@ -19,7 +19,7 @@ interface HeroBannerProps {
 
 export function HeroBanner({ movies, className }: HeroBannerProps) {
     const [currentIndex, setCurrentIndex] = React.useState(0);
-    const [isMuted, setIsMuted] = React.useState(true);
+
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
 
     const featuredMovies = movies.slice(0, 5);
@@ -186,14 +186,6 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
             {
                 featuredMovies.length > 1 && (
                     <div className="absolute bottom-8 right-8 flex items-center gap-4">
-                        {/* Mute Button */}
-                        <button
-                            onClick={() => setIsMuted(!isMuted)}
-                            className="p-3 rounded-full border border-white/30 text-white/70 hover:text-white hover:border-white transition-colors"
-                        >
-                            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                        </button>
-
                         {/* Dots */}
                         <div className="flex gap-2">
                             {featuredMovies.map((_, index) => (
