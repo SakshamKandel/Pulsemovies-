@@ -96,11 +96,12 @@ export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps)
                     <motion.div
                         initial={false}
                         animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 }}
-                        className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-2"
+                        className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-2 z-20"
+                        style={{ pointerEvents: isHovered ? 'auto' : 'none' }}
                     >
                         <button
                             onClick={handleWatchClick}
-                            className="flex items-center justify-center gap-2 w-full py-2 px-4 rounded-lg bg-gradient-magenta text-white font-medium text-sm hover:opacity-90 transition-opacity"
+                            className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg bg-gradient-magenta text-white font-medium text-sm hover:opacity-90 transition-opacity cursor-pointer"
                         >
                             <Play className="w-4 h-4 fill-current" />
                             Watch
@@ -109,7 +110,7 @@ export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps)
                             <button
                                 onClick={handleWatchlistToggle}
                                 className={cn(
-                                    'flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-sm font-medium transition-colors',
+                                    'flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer',
                                     inWatchlist
                                         ? 'bg-accent-primary text-white'
                                         : 'bg-white/20 text-white hover:bg-white/30'
@@ -123,7 +124,7 @@ export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps)
                             </button>
                             <button
                                 onClick={handleInfoClick}
-                                className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-white/20 text-white text-sm font-medium hover:bg-white/30 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-white/20 text-white text-sm font-medium hover:bg-white/30 transition-colors cursor-pointer"
                             >
                                 <Info className="w-4 h-4" />
                             </button>
