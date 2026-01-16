@@ -57,7 +57,7 @@ export default async function HomePage() {
 
       {/* Content Sections */}
       <div className="relative z-10 bg-background">
-        <div className="space-y-14 py-8">
+        <div className="space-y-14 pb-8 pt-4">
           {/* User Sections - Continue Watching & My List (client-side with cache) */}
           <UserSections />
 

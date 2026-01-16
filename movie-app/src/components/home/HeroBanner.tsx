@@ -88,9 +88,9 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
             <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
             {/* Content Container */}
-            <div className="absolute inset-0 flex items-center mb-12 md:mb-0">
-                <div className="container mx-auto px-4 md:px-8">
-                    <div className="max-w-xl space-y-4 md:space-y-6 pt-20 md:pt-20">
+            <div className="absolute inset-0 flex items-end mb-0">
+                <div className="container mx-auto px-4 md:px-8 pb-20 md:pb-24">
+                    <div className="max-w-xl md:max-w-2xl space-y-4 md:space-y-6 pr-12 md:pr-0">
                         {/* Title - Clean & Big */}
                         <AnimatePresence mode="wait">
                             {currentMovie.images?.logos?.[0] ? (
