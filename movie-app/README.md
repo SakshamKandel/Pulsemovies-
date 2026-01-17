@@ -1,3 +1,13 @@
+# Movie App
+
+<p align="center">
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FSakshamKandel%2FPulsemovies-&env=NEXT_PUBLIC_TMDB_API_KEY,NEXT_PUBLIC_TMDB_BASE_URL,NEXT_PUBLIC_TMDB_IMAGE_BASE_URL,NEXT_PUBLIC_SITE_NAME,NEXT_PUBLIC_SITE_URL&project-name=pulse-movies&repository-name=pulse-movies">
+    <img src="https://vercel.com/button" alt="Deploy with Vercel"/>
+  </a>
+</p>
+
+See [DEPLOY.md](./DEPLOY.md) for detailed deployment instructions.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
