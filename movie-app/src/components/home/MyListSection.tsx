@@ -58,16 +58,8 @@ export function MyListSection() {
                                         className="object-cover transition-transform group-hover:scale-105"
                                     />
 
-                                    {/* Play overlay */}
-                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Link
-                                            href={watchHref}
-                                            className="w-12 h-12 rounded-full bg-accent-primary flex items-center justify-center hover:scale-110 transition-transform"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <Play className="w-5 h-5 text-white fill-white ml-0.5" />
-                                        </Link>
-                                    </div>
+                                    {/* Hover gradient overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
 
                                 <p className="mt-2 text-white text-sm font-medium line-clamp-1">{title}</p>

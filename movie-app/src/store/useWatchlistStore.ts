@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Movie, TVShow } from '@/types/movie';
+import type { Movie, TVShow, MovieDetails, TVShowDetails } from '@/types/movie';
 
-type WatchlistItem = (Movie | TVShow) & { addedAt: number };
+type ContentItem = Movie | TVShow | MovieDetails | TVShowDetails;
+type WatchlistItem = ContentItem & { addedAt: number };
 
 interface WatchlistState {
     items: WatchlistItem[];
-    addToWatchlist: (item: Movie | TVShow) => void;
+    addToWatchlist: (item: ContentItem) => void;
     removeFromWatchlist: (id: number) => void;
     isInWatchlist: (id: number) => boolean;
     clearWatchlist: () => void;

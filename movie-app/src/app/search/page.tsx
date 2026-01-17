@@ -2,12 +2,14 @@ import { Suspense } from 'react';
 import { searchMulti } from '@/lib/tmdb';
 import { MovieCard } from '@/components/movie/MovieCard';
 import { SearchBar } from '@/components/search/SearchBar';
+import { SearchFilters } from '@/components/search/SearchFilters';
 import { MovieCardSkeleton } from '@/components/ui/Skeleton';
 import type { Movie, TVShow } from '@/types/movie';
 import type { Metadata } from 'next';
+import { MOVIE_GENRES } from '@/lib/constants';
 
 interface Props {
-    searchParams: Promise<{ q?: string; page?: string }>;
+    searchParams: Promise<{ q?: string; page?: string; genre?: string; year?: string; rating?: string }>;
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
@@ -93,10 +95,13 @@ export default async function SearchPage({ searchParams }: Props) {
             <div className="container mx-auto px-4 md:px-8">
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-8">Search</h1>
 
-                {/* Search Bar */}
-                <div className="mb-12">
+                {/* Search Bar - ensure it's on top */}
+                <div className="relative z-50 mb-6">
                     <SearchBar />
                 </div>
+
+                {/* Filters */}
+                {query && <SearchFilters />}
 
                 {/* Results */}
                 {query ? (

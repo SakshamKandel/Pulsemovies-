@@ -1,12 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Play, Plus, Star, Clock, Calendar, Globe, Film } from 'lucide-react';
+import { Play, Star, Clock, Calendar, Globe, Film } from 'lucide-react';
 import { getMovieDetails } from '@/lib/tmdb';
 import { getImageUrl, formatRuntime, formatYear, formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { MovieCarousel } from '@/components/movie/MovieCarousel';
+import { AddToListButton } from '@/components/ui/AddToListButton';
 import type { Metadata } from 'next';
 
 interface Props {
@@ -156,13 +157,7 @@ export default async function MovieDetailPage({ params }: Props) {
                                     </Button>
                                 </a>
                             )}
-                            <Button
-                                variant="ghost"
-                                size="lg"
-                                leftIcon={<Plus className="w-5 h-5" />}
-                            >
-                                Add to List
-                            </Button>
+                            <AddToListButton item={movie} size="lg" />
                         </div>
 
                         {/* Additional Info */}
@@ -199,8 +194,12 @@ export default async function MovieDetailPage({ params }: Props) {
                         <h2 className="text-2xl font-bold text-white mb-6">Cast</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
                             {cast.map((member) => (
-                                <div key={member.id} className="text-center">
-                                    <div className="relative w-full aspect-square rounded-full overflow-hidden bg-background-card mb-3">
+                                <Link
+                                    key={member.id}
+                                    href={`/person/${member.id}`}
+                                    className="text-center group"
+                                >
+                                    <div className="relative w-full aspect-square rounded-full overflow-hidden bg-background-card mb-3 group-hover:ring-2 ring-accent-primary transition-all">
                                         {member.profile_path ? (
                                             <Image
                                                 src={getImageUrl(member.profile_path, 'medium', 'profile')}
@@ -214,9 +213,9 @@ export default async function MovieDetailPage({ params }: Props) {
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-white text-sm font-medium line-clamp-1">{member.name}</p>
+                                    <p className="text-white text-sm font-medium line-clamp-1 group-hover:text-accent-primary transition-colors">{member.name}</p>
                                     <p className="text-text-muted text-xs line-clamp-1">{member.character}</p>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     </section>

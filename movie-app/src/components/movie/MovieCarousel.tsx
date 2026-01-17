@@ -9,6 +9,8 @@ import { MovieCard } from './MovieCard';
 import { MovieCardSkeleton } from '@/components/ui/Skeleton';
 import type { Movie, TVShow } from '@/types/movie';
 
+import { useDiscoveryStore } from '@/store/useDiscoveryStore';
+
 interface MovieCarouselProps {
     title: string;
     items: (Movie | TVShow)[];
@@ -26,6 +28,22 @@ export function MovieCarousel({
     className,
     seeMoreLink,
 }: MovieCarouselProps) {
+    const { isDeepCutsEnabled } = useDiscoveryStore();
+
+    // Filter for "Deep Cuts" (Hidden Gems)
+    // Rule: Hide popular content (high vote count) to surface lesser-known high-rated content.
+    const displayedItems = React.useMemo(() => {
+        if (!isDeepCutsEnabled || !items) return items;
+        return items.filter(item => {
+            // Check if vote_count exists (it should for TMDB objects)
+            const votes = (item as any).vote_count || 0;
+            const rating = (item as any).vote_average || 0;
+            // "Deep Cut" definition: < 3000 votes but decent rating (> 6.0)
+            // Or just hide the massive blockbusters (> 5000 votes)
+            return votes < 3000;
+        });
+    }, [items, isDeepCutsEnabled]);
+
     const scrollRef = React.useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = React.useState(false);
     const [canScrollRight, setCanScrollRight] = React.useState(true);
@@ -54,7 +72,7 @@ export function MovieCarousel({
             }
             window.removeEventListener('resize', checkScroll);
         };
-    }, [items]);
+    }, [displayedItems]);
 
     const scroll = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
@@ -68,6 +86,12 @@ export function MovieCarousel({
 
     // Drag handlers for draggable carousel
     const handleMouseDown = (e: React.MouseEvent) => {
+        // Don't initiate drag if clicking on interactive elements
+        const target = e.target as HTMLElement;
+        if (target.closest('button') || target.closest('a')) {
+            return; // Let the click through
+        }
+
         if (!scrollRef.current) return;
         setIsDragging(true);
         setStartX(e.pageX - scrollRef.current.offsetLeft);
@@ -99,7 +123,7 @@ export function MovieCarousel({
         );
     }
 
-    if (!items || items.length === 0) {
+    if (!displayedItems || displayedItems.length === 0) {
         return null;
     }
 
@@ -178,7 +202,7 @@ export function MovieCarousel({
                     )}
                     style={{ scrollBehavior: isDragging ? 'auto' : 'smooth' }}
                 >
-                    {items.map((item, index) => (
+                    {displayedItems.map((item, index) => (
                         <div
                             key={item.id}
                             style={{ pointerEvents: isDragging ? 'none' : 'auto' }}

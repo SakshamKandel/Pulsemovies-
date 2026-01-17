@@ -1,38 +1,30 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
-export function Footer() {
-    const currentYear = new Date().getFullYear();
+interface FooterProps {
+    className?: string;
+}
 
+export function Footer({ className }: FooterProps) {
     return (
-        <footer className="relative mt-12">
-            {/* Gradient fade */}
-            <div className="absolute -top-12 left-0 right-0 h-12 bg-gradient-to-b from-transparent to-background pointer-events-none" />
-
-            <div className="container mx-auto px-4 md:px-8 py-6">
-                {/* Centered Logo */}
-                <div className="flex flex-col items-center text-center">
-                    <Link href="/" className="mb-3">
-                        <Image
-                            src="/images/logo.png"
-                            alt="Pulse Movies"
-                            width={400}
-                            height={130}
-                            className="h-32 w-auto"
-                        />
-                    </Link>
-
-                    {/* Quick Links */}
-                    <div className="flex gap-6 text-sm text-text-muted mb-4">
-                        <Link href="/browse/movies" className="hover:text-white transition-colors">Movies</Link>
-                        <Link href="/browse/series" className="hover:text-white transition-colors">TV Shows</Link>
-                        <Link href="/my-list" className="hover:text-white transition-colors">My List</Link>
+        <footer className={cn("w-full bg-transparent py-6 px-6 md:px-12 mt-auto text-xs pointer-events-none", className)}>
+            <div className="container mx-auto flex flex-col md:flex-row items-center md:items-end justify-between gap-4 pointer-events-auto">
+                {/* Copyright - Bottom Left */}
+                <div className="flex flex-col items-center md:items-start gap-1">
+                    <div className="flex items-center gap-4 opacity-80">
+                        <Link href="/about" className="text-text-secondary hover:text-white transition-colors">
+                            About Us
+                        </Link>
+                        <Link href="/terms" className="text-text-secondary hover:text-white transition-colors">
+                            Terms & Conditions
+                        </Link>
+                        <Link href="/terms" className="text-text-secondary hover:text-white transition-colors">
+                            Privacy Policy
+                        </Link>
                     </div>
-
-                    {/* Copyright */}
-                    <span className="text-text-muted text-xs">
-                        © {currentYear} Pulse Movies
-                    </span>
+                    <p className="text-text-secondary/60 mt-0.5 scale-90 origin-left">
+                        © 2026 Pulsemovies. All rights reserved.
+                    </p>
                 </div>
             </div>
         </footer>

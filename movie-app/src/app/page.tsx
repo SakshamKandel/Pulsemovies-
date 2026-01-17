@@ -1,3 +1,5 @@
+import { DiscoveryBar } from '@/components/discovery/DiscoveryBar';
+import { RouletteModal } from '@/components/ui/RouletteModal';
 import { HeroBanner } from '@/components/home/HeroBanner';
 import { MoodPicker } from '@/components/home/MoodPicker';
 import { MovieCarousel } from '@/components/movie/MovieCarousel';
@@ -65,9 +67,16 @@ export default async function HomePage() {
   // Fallback for Prime Video if provider fetch returns empty (common issue with some regions/API keys)
   const finalPrimeMovies = primeMovies.results.length > 0 ? primeMovies.results : popularMovies.results.slice(0, 10);
 
+  // Pool for Roulette (ensure unique by ID logic handled by random picker or simple merge)
+  const roulettePool = [...trendingMovies.results, ...topRatedMovies.results, ...popularMovies.results];
+
   return (
     <div className="min-h-screen bg-background">
+      <RouletteModal allMovies={roulettePool} />
+
       <HeroBanner movies={heroMovies} />
+
+      <DiscoveryBar />
 
       {/* Content Sections */}
       <div className="relative z-10 bg-background">

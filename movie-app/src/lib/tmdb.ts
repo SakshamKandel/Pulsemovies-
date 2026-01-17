@@ -248,4 +248,26 @@ export async function getTVByProvider(providerId: number, page: number = 1): Pro
     });
 }
 
+// Get person/cast details with credits
+export async function getPersonDetails(id: number): Promise<any> {
+    const response = await tmdbApi.get(`/person/${id}`, {
+        params: {
+            append_to_response: 'movie_credits,tv_credits,images',
+        },
+    });
+    return response.data;
+}
+
+// Get similar movies
+export async function getSimilarMovies(id: number): Promise<MovieListResponse> {
+    const response = await tmdbApi.get(`/movie/${id}/similar`);
+    return response.data;
+}
+
+// Get movie recommendations
+export async function getMovieRecommendations(id: number): Promise<MovieListResponse> {
+    const response = await tmdbApi.get(`/movie/${id}/recommendations`);
+    return response.data;
+}
+
 export { tmdbApi };

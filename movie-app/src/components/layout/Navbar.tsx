@@ -41,13 +41,13 @@ export function Navbar() {
         <>
             <header
                 className={cn(
-                    'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+                    'fixed top-0 left-0 right-0 z-50 transition-all duration-300 pointer-events-none',
                     scrolled || isMobileMenuOpen
                         ? 'bg-background border-b border-border'
-                        : 'bg-transparent'
+                        : 'bg-gradient-to-b from-black/80 to-transparent'
                 )}
             >
-                <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
+                <nav className="container mx-auto px-4 h-16 flex items-center justify-between pointer-events-auto">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 -my-4">
                         <Image
@@ -120,48 +120,67 @@ export function Navbar() {
                 </AnimatePresence>
             </header>
 
-            {/* Mobile Menu */}
-            <AnimatePresence>
-                {isMobileMenuOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, x: '100%' }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: '100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed inset-y-0 right-0 z-40 w-full max-w-sm bg-background-secondary border-l border-border pt-20 px-6 md:hidden"
-                    >
-                        <nav className="space-y-2">
-                            {NAV_ITEMS.map((item) => (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={cn(
-                                        'block py-3 px-4 rounded-lg text-lg font-medium transition-colors',
-                                        pathname === item.href
-                                            ? 'bg-accent-primary/10 text-accent-primary'
-                                            : 'text-text-secondary hover:text-white hover:bg-background-card'
-                                    )}
-                                >
-                                    {item.label}
-                                </Link>
-                            ))}
-                        </nav>
-
-
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Mobile Menu Backdrop */}
+            {/* Mobile Menu - Full Screen Overlay */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="fixed inset-0 z-30 bg-black/50 md:hidden"
-                    />
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-[60] bg-background md:hidden flex flex-col"
+                    >
+                        {/* Header with close button */}
+                        <div className="flex items-center justify-between px-4 h-16 border-b border-border">
+                            <Link href="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                                <Image
+                                    src="/images/logo.png"
+                                    alt="Pulse Movies"
+                                    width={150}
+                                    height={48}
+                                    className="h-10 w-auto object-contain"
+                                />
+                            </Link>
+                            <button
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="p-2 rounded-full bg-background-card text-white"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Navigation Links */}
+                        <nav className="flex-1 px-6 py-8 space-y-1">
+                            {NAV_ITEMS.map((item, index) => (
+                                <motion.div
+                                    key={item.href}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                >
+                                    <Link
+                                        href={item.href}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className={cn(
+                                            'flex items-center gap-4 py-4 px-4 rounded-xl text-xl font-medium transition-all',
+                                            pathname === item.href
+                                                ? 'bg-accent-primary text-white'
+                                                : 'text-text-secondary hover:text-white hover:bg-background-card'
+                                        )}
+                                    >
+                                        {item.label}
+                                    </Link>
+                                </motion.div>
+                            ))}
+                        </nav>
+
+                        {/* Bottom section */}
+                        <div className="px-6 py-6 border-t border-border">
+                            <p className="text-text-muted text-xs text-center">
+                                © 2026 Pulsemovies
+                            </p>
+                        </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </>

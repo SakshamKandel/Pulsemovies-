@@ -42,6 +42,10 @@ export const metadata: Metadata = {
   },
 };
 
+import { Footer } from "@/components/layout/Footer";
+
+// ... (existing imports)
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,6 +58,7 @@ export default function RootLayout({
           <div className="min-h-screen flex flex-col">
             <Navbar />
             <main className="flex-1">{children}</main>
+            <Footer />
           </div>
         </Providers>
       </body>

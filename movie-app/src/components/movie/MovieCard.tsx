@@ -4,14 +4,16 @@ import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Play, Plus, Check, Star } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getImageUrl, formatYear, getContentTitle, getContentDate } from '@/lib/utils';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
-import type { Movie, TVShow } from '@/types/movie';
+import type { Movie, TVShow, MovieDetails, TVShowDetails } from '@/types/movie';
+
+type ContentItem = Movie | TVShow | MovieDetails | TVShowDetails;
 
 interface MovieCardProps {
-    item: Movie | TVShow;
+    item: ContentItem & { addedAt?: number };
     index?: number;
     showRank?: boolean;
 }
@@ -53,8 +55,8 @@ export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps)
                 </span>
             )}
 
-            {/* Card Image Container */}
-            <div className="relative aspect-[2/3] bg-background-card rounded-xl overflow-hidden transition-all duration-300 z-10 box-decoration-clone">
+            {/* Card Image Container - Link to detail page */}
+            <Link href={href} className="block relative aspect-[2/3] bg-background-card rounded-xl overflow-hidden transition-all duration-300 z-10">
                 {!imageError ? (
                     <Image
                         src={posterUrl}
@@ -70,37 +72,30 @@ export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps)
                     </div>
                 )}
 
-                {/* 2D Overlay - Solid Matte on Hover */}
-                <div className="absolute inset-0 bg-black/80 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-4 p-4">
-                    <Link href={watchHref} className="w-full">
-                        <button className="w-full py-2.5 bg-accent-primary hover:bg-accent-hover text-white font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-2">
-                            <Play className="w-4 h-4 fill-current" />
-                            PLAY
-                        </button>
-                    </Link>
-
+                {/* Hover Overlay - Add to List only */}
+                <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-end p-4">
                     <button
                         onClick={handleWatchlistToggle}
                         className={cn(
-                            "w-full py-2.5 font-semibold text-sm transition-colors border flex items-center justify-center gap-2",
+                            "w-full py-2.5 font-semibold text-sm transition-all flex items-center justify-center gap-2 rounded-lg",
                             inWatchlist
-                                ? "bg-transparent border-accent-secondary text-accent-secondary"
-                                : "bg-transparent border-white/20 text-white hover:border-white"
+                                ? "bg-accent-primary text-white"
+                                : "bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20"
                         )}
                     >
                         {inWatchlist ? (
-                            <><Check className="w-4 h-4" /> ADDED</>
+                            <><Check className="w-4 h-4" /> In My List</>
                         ) : (
-                            <><Plus className="w-4 h-4" /> MY LIST</>
+                            <><Plus className="w-4 h-4" /> Add to List</>
                         )}
                     </button>
                 </div>
 
-                {/* Rating Tag (Always visible until hover takes over) */}
+                {/* Rating Tag */}
                 <div className="absolute top-2 right-2 bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-accent-primary border border-white/10 group-hover/card:opacity-0 transition-opacity">
                     ★ {rating.toFixed(1)}
                 </div>
-            </div>
+            </Link>
 
             {/* Simple Text Details */}
             <div className="mt-3 space-y-1">

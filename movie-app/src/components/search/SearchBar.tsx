@@ -99,61 +99,64 @@ export function SearchBar() {
     };
 
     return (
-        <div className="relative w-full max-w-3xl mx-auto">
-            {/* Search Input - Premium Design */}
-            <form onSubmit={handleSubmit} className="relative">
+        <div className="relative w-full max-w-3xl mx-auto z-[60]">
+            {/* Search Input - Glass Effect */}
+            <form onSubmit={handleSubmit} className="relative group">
+                {/* Glow effect on focus */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-accent-primary/20 via-purple-500/20 to-accent-primary/20 rounded-full blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+
                 <div className="relative">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-accent-primary" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 group-focus-within:text-accent-primary transition-colors" />
                     <input
                         ref={inputRef}
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search for movies, TV shows, genres..."
-                        className={cn(
-                            'w-full h-14 pl-14 pr-14 rounded-2xl',
-                            'bg-background-secondary/80 backdrop-blur-sm',
-                            'border-2 border-border hover:border-accent-primary/30',
-                            'text-white text-lg placeholder:text-text-muted',
-                            'focus:outline-none focus:border-accent-primary focus:ring-4 focus:ring-accent-primary/10',
-                            'transition-all duration-300'
-                        )}
+                        placeholder="Search movies, TV shows, actors..."
+                        className="w-full h-12 pl-12 pr-12 bg-zinc-900 border border-zinc-700 rounded-lg text-white text-base placeholder:text-white/40 focus:outline-none focus:border-accent-primary transition-colors"
+                        style={{ pointerEvents: 'auto' }}
                     />
 
                     {/* Loading/Clear Button */}
-                    <div className="absolute right-5 top-1/2 -translate-y-1/2">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10" style={{ pointerEvents: 'auto' }}>
                         {isLoading ? (
                             <Loader2 className="w-5 h-5 text-accent-primary animate-spin" />
                         ) : query && (
                             <button
                                 type="button"
                                 onClick={clearSearch}
-                                className="p-1.5 rounded-full bg-background-card hover:bg-accent-primary/20 transition-colors"
+                                className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer"
+                                style={{ pointerEvents: 'auto' }}
                             >
-                                <X className="w-4 h-4 text-text-muted" />
+                                <X className="w-4 h-4 text-white/70 hover:text-white" />
                             </button>
                         )}
                     </div>
                 </div>
             </form>
 
-            {/* Quick Genre Pills - Show when no query */}
+            {/* Quick Genre Pills */}
             <AnimatePresence>
                 {!query && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="mt-4 flex flex-wrap justify-center gap-2"
+                        className="mt-5 flex flex-wrap justify-center gap-2 relative z-[60]"
+                        style={{ pointerEvents: 'auto' }}
                     >
-                        {QUICK_GENRES.map((genre) => (
-                            <button
+                        {QUICK_GENRES.map((genre, i) => (
+                            <motion.button
                                 key={genre.id}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: i * 0.05 }}
                                 onClick={() => handleGenreClick(genre.id)}
-                                className="px-4 py-2 rounded-full bg-background-card border border-border text-sm text-text-secondary hover:text-white hover:border-accent-primary/50 hover:bg-accent-primary/10 transition-all"
+                                className="px-4 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-sm text-white/80 hover:text-white hover:bg-zinc-700 transition-all duration-200 cursor-pointer"
+                                style={{ pointerEvents: 'auto' }}
                             >
                                 {genre.name}
-                            </button>
+                            </motion.button>
                         ))}
                     </motion.div>
                 )}
@@ -166,7 +169,8 @@ export function SearchBar() {
                         initial={{ opacity: 0, y: -10, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                        className="absolute top-full left-0 right-0 mt-3 bg-background-card/95 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl z-50"
+                        className="absolute top-full left-0 right-0 mt-3 bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100] pointer-events-auto"
+                        style={{ pointerEvents: 'auto' }}
                     >
                         <div className="p-2">
                             {results.map((item, index) => {
@@ -245,6 +249,6 @@ export function SearchBar() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 }
