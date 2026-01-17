@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pages:build": "npx @opennextjs/cloudflare build",
+    "preview": "npx wrangler dev"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.18",
@@ -25,6 +27,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.14.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
