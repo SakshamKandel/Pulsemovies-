@@ -47,3 +47,15 @@ This guide will help you deploy your Movie Streaming Platform to [Vercel](https:
 
 - **Custom Domain**: Go to **Settings** -> **Domains** to add your own domain (e.g., `pulsemovies.com`) if you have one.
 - **Redeployment**: Every time you push to your GitHub `main` branch, Vercel will automatically redeploy your site.
+
+## Troubleshooting
+
+### Accidentally Deleted Domain?
+If you deleted the default domain (e.g., `movie-app.vercel.app`) or want to add a new one:
+
+1. Go to your **Project Dashboard** on Vercel.
+2. Click on **Settings** (top menu).
+3. Select **Domains** (left sidebar).
+4. In the input box, type the domain you want (e.g., `your-project-name.vercel.app` or a custom domain).
+5. Click **Add**.
+6. Vercel will automatically configure it. If using a custom domain, follow the DNS instructions provided.
