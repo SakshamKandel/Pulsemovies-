@@ -98,7 +98,7 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
                                         <span>{runtime}</span>
                                         <div className="flex gap-2">
                                             {movie.genres.slice(0, 3).map(g => (
-                                                <Badge key={g.id} variant="outline" className="border-white/10 hover:bg-white/5 text-gray-300">
+                                                <Badge key={g.id} variant="default" className="bg-transparent border-white/10 hover:bg-white/5 text-gray-300">
                                                     {g.name}
                                                 </Badge>
                                             ))}
@@ -111,8 +111,8 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
                                     <button
                                         onClick={handleWatchlistToggle}
                                         className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all w-full md:w-auto ${inWatchlist
-                                                ? 'bg-accent-primary text-white hover:bg-accent-hover'
-                                                : 'bg-white/10 text-white hover:bg-white/20'
+                                            ? 'bg-accent-primary text-white hover:bg-accent-hover'
+                                            : 'bg-white/10 text-white hover:bg-white/20'
                                             }`}
                                     >
                                         {inWatchlist ? (
