@@ -124,6 +124,7 @@ export const SITE_CONFIG = {
 // Navigation Items
 export const NAV_ITEMS = [
     { label: 'Home', href: '/' },
+    { label: 'Shorts', href: '/shorts' },
     { label: 'Movies', href: '/browse/movies' },
     { label: 'TV Shows', href: '/browse/series' },
     { label: 'My List', href: '/my-list' },

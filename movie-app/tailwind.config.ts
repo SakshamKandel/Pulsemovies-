@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -9,41 +10,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Dark Magenta Theme
+        // Modern 2D Theme - Solid, Matte, Vibrant
         background: {
-          DEFAULT: "#0D0D0D",
-          secondary: "#1A1A2E",
-          card: "#16162A",
+          DEFAULT: "#0A0A0A", // Zinc 950
+          paper: "#121212",
+          secondary: "#18181B", // Zinc 900
+          card: "#27272A", // Zinc 800
         },
         accent: {
-          primary: "#E91E8C",
-          secondary: "#9B1B8C",
-          hover: "#FF2D9C",
+          primary: "#8B5CF6", // Violet 500
+          secondary: "#6366F1", // Indigo 500
+          hover: "#A78BFA", // Violet 400
+          error: "#EF4444",
+          success: "#10B981",
         },
         text: {
           primary: "#FFFFFF",
-          secondary: "#A0A0B0",
-          muted: "#6B6B7B",
+          secondary: "#A1A1AA", // Zinc 400
+          muted: "#71717A", // Zinc 500,
+          highlight: "#E4E4E7",
         },
         border: {
-          DEFAULT: "#2D2D44",
-          light: "#3D3D54",
+          DEFAULT: "#3F3F46", // Zinc 700 - Visible borders for 2D look
+          subtle: "#27272A",
         },
       },
       backgroundImage: {
-        "gradient-magenta": "linear-gradient(135deg, #E91E8C 0%, #6B1B6B 100%)",
-        "gradient-dark": "linear-gradient(180deg, rgba(13,13,13,0) 0%, #0D0D0D 100%)",
-        "gradient-card": "linear-gradient(180deg, rgba(22,22,42,0.8) 0%, rgba(22,22,42,1) 100%)",
+        "gradient-accent": "linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)",
+        "gradient-dark": "linear-gradient(180deg, rgba(10,10,10,0) 0%, #0A0A0A 100%)",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
       animation: {
-        "fade-in": "fadeIn 0.5s ease-out",
-        "slide-up": "slideUp 0.5s ease-out",
-        "slide-in": "slideIn 0.3s ease-out",
-        shimmer: "shimmer 2s linear infinite",
-        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "fade-in": "fadeIn 0.3s ease-out",
+        "slide-up": "slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)", // Snappier
+        "scale-in": "scaleIn 0.2s ease-out",
+        "float": "float 3s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -51,21 +54,22 @@ const config: Config = {
           "100%": { opacity: "1" },
         },
         slideUp: {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "0%": { opacity: "0", transform: "translateY(10px)" }, // Less travel
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        slideIn: {
-          "0%": { opacity: "0", transform: "translateX(-20px)" },
-          "100%": { opacity: "1", transform: "translateX(0)" },
+        scaleIn: {
+          "0%": { opacity: "0", transform: "scale(0.95)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
         },
-        shimmer: {
-          "0%": { backgroundPosition: "-200% 0" },
-          "100%": { backgroundPosition: "200% 0" },
-        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-5px)" },
+        }
       },
       boxShadow: {
-        glow: "0 0 20px rgba(233, 30, 140, 0.3)",
-        "glow-lg": "0 0 40px rgba(233, 30, 140, 0.4)",
+        "flat": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        "2d": "0 0 0 1px #3F3F46",
+        "2d-hover": "0 0 0 2px #8B5CF6", // Border glow effect without blur
       },
     },
   },

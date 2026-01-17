@@ -1,4 +1,5 @@
 import { HeroBanner } from '@/components/home/HeroBanner';
+import { MoodPicker } from '@/components/home/MoodPicker';
 import { MovieCarousel } from '@/components/movie/MovieCarousel';
 import { PlatformCarousel } from '@/components/home/PlatformCarousel';
 import { UserSections } from '@/components/home/UserSections';
@@ -16,7 +17,17 @@ import {
   getMoviesWithLogos
 } from '@/lib/tmdb';
 
-export const revalidate = 3600;
+// Force dynamic rendering to ensure fresh content on reload
+export const dynamic = 'force-dynamic';
+
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
 
 export default async function HomePage() {
   const [
@@ -45,8 +56,11 @@ export default async function HomePage() {
     getMoviesByProvider(531) // Paramount+
   ]);
 
-  // Fetch logos for hero section (top 5 movies)
-  const heroMovies = await getMoviesWithLogos(trendingMovies.results);
+  // Shuffle trending movies to get random hero content on every reload
+  const shuffledTrending = shuffleArray(trendingMovies.results);
+
+  // Fetch logos for hero section (top 5 random movies from trending)
+  const heroMovies = await getMoviesWithLogos(shuffledTrending.slice(0, 5));
 
   // Fallback for Prime Video if provider fetch returns empty (common issue with some regions/API keys)
   const finalPrimeMovies = primeMovies.results.length > 0 ? primeMovies.results : popularMovies.results.slice(0, 10);
@@ -57,7 +71,11 @@ export default async function HomePage() {
 
       {/* Content Sections */}
       <div className="relative z-10 bg-background">
-        <div className="space-y-14 pb-8 pt-4">
+        <div className="space-y-14 pb-20 pt-10 md:pt-20">
+
+          {/* Mood Discovery - New Feature */}
+          <MoodPicker />
+
           {/* User Sections - Continue Watching & My List (client-side with cache) */}
           <UserSections />
 

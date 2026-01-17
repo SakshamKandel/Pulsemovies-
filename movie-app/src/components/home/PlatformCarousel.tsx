@@ -83,11 +83,7 @@ export function PlatformCarousel({ platform, platformKey, items, className }: Pl
                 background: `linear-gradient(135deg, ${platform.accentColor}08 0%, transparent 60%)`,
             }}
         >
-            {/* Subtle themed top border */}
-            <div
-                className="absolute top-0 left-0 right-0 h-px opacity-30"
-                style={{ background: `linear-gradient(90deg, transparent, ${platform.accentColor}, transparent)` }}
-            />
+
 
             <div className="p-4">
                 {/* Header */}

@@ -16,6 +16,7 @@ export interface Movie {
     original_language: string;
     video: boolean;
     media_type?: 'movie';
+    video_key?: string;
     images?: {
         logos: {
             file_path: string;

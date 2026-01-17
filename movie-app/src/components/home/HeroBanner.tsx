@@ -8,7 +8,6 @@ import { Play, Info, Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getImageUrl, truncateText, formatYear } from '@/lib/utils';
 import { MOVIE_GENRES } from '@/lib/constants';
-import { Button } from '@/components/ui/Button';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
 import type { Movie } from '@/types/movie';
 
@@ -20,6 +19,7 @@ interface HeroBannerProps {
 export function HeroBanner({ movies, className }: HeroBannerProps) {
     const [currentIndex, setCurrentIndex] = React.useState(0);
     const [mounted, setMounted] = React.useState(false);
+    const [isDragging, setIsDragging] = React.useState(false);
 
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
 
@@ -30,14 +30,21 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
     const featuredMovies = movies.slice(0, 5);
     const currentMovie = featuredMovies[currentIndex];
 
-    // Auto-rotate featured movies
+    // Drag / Swipe Logic
+    const paginate = (newDirection: number) => {
+        setCurrentIndex((prev) => (prev + newDirection + featuredMovies.length) % featuredMovies.length);
+    };
+
+    const swipeConfidenceThreshold = 10000;
+    const swipePower = (offset: number, velocity: number) => {
+        return Math.abs(offset) * velocity;
+    };
+
     React.useEffect(() => {
         if (featuredMovies.length <= 1) return;
-
         const interval = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % featuredMovies.length);
-        }, 8000);
-
+        }, 10000);
         return () => clearInterval(interval);
     }, [featuredMovies.length]);
 
@@ -57,170 +64,175 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
     };
 
     return (
-    return (
-        <div className={cn('relative h-[65vh] md:h-[85vh] min-h-[550px] w-full overflow-hidden', className)}>
-            {/* Background Image */}
+        <div className={cn('relative w-full h-[75vh] min-h-[600px] overflow-hidden bg-background group', className)}>
+            {/* Background Image Container with Sharp Cutoff */}
             <AnimatePresence mode="wait">
                 <motion.div
                     key={currentMovie.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="absolute inset-0"
+                    initial={{ opacity: 0, x: 100 }} // Slide effect
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="absolute inset-0 cursor-grab active:cursor-grabbing"
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={1}
+                    onDragEnd={(e, { offset, velocity }) => {
+                        const swipe = swipePower(offset.x, velocity.x);
+
+                        if (swipe < -swipeConfidenceThreshold) {
+                            paginate(1);
+                        } else if (swipe > swipeConfidenceThreshold) {
+                            paginate(-1);
+                        }
+                    }}
                 >
+                    {/* Image */}
                     <Image
                         src={backdropUrl}
                         alt={currentMovie.title}
                         fill
                         priority
-                        className="object-cover"
+                        className="object-cover object-top"
                     />
+                    {/* Modern 2D Matte Overlay - Clean & Flat */}
+                    <div className="absolute inset-0 bg-black/20" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent opacity-90" />
                 </motion.div>
             </AnimatePresence>
 
-            {/* Cinematic Gradient Overlays */}
-            {/* Stronger bottom gradient for mobile text readability */}
-            <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background via-background/60 to-transparent md:hidden" />
-
-            {/* Desktop gradients (Sidebar spotlight effect) */}
-            <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent" />
-            <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-
-            {/* Content Container */}
-            <div className="absolute inset-0 flex items-end mb-0">
-                <div className="container mx-auto px-4 md:px-8 pb-28 md:pb-32">
-                    <div className="max-w-xl md:max-w-2xl space-y-4 md:space-y-6 pr-12 md:pr-16">
-                        {/* Title - Clean & Big */}
-                        <AnimatePresence mode="wait">
-                            {currentMovie.images?.logos?.[0] ? (
-                                <motion.div
-                                    key={`logo-${currentMovie.id}`}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.5 }}
-                                    className="relative h-20 md:h-32 w-full max-w-[280px] md:max-w-sm"
-                                >
-                                    <Image
-                                        src={getImageUrl(currentMovie.images.logos[0].file_path, 'original', 'logo')}
-                                        alt={currentMovie.title}
-                                        fill
-                                        className="object-contain object-left"
-                                        priority
-                                    />
-                                </motion.div>
-                            ) : (
-                                <motion.h1
-                                    key={`title-${currentMovie.id}`}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.5 }}
-                                    className="text-3xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-none"
-                                >
-                                    {currentMovie.title}
-                                </motion.h1>
-                            )}
-                        </AnimatePresence>
-
-                        {/* Metadata Pills */}
+            {/* Content Grid */}
+            <div className="absolute inset-0 flex items-center z-20 pointer-events-none">
+                <div className="container mx-auto px-4 md:px-8 pointer-events-auto">
+                    <div className="max-w-2xl space-y-6 md:space-y-8">
+                        {/* Title Section */}
                         <AnimatePresence mode="wait">
                             <motion.div
-                                key={`meta-${currentMovie.id}`}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="flex flex-wrap items-center gap-2 md:gap-3"
+                                key={`content-${currentMovie.id}`}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                transition={{ duration: 0.4 }}
+                                className="space-y-4"
                             >
-                                <div className="flex items-center gap-2 px-2.5 py-0.5 md:px-3 md:py-1 bg-yellow-400/10 border border-yellow-400/20 rounded-full backdrop-blur-sm">
-                                    <span className="text-yellow-400 text-xs md:text-sm font-bold">★ {currentMovie.vote_average.toFixed(1)}</span>
-                                </div>
-                                <div className="px-2.5 py-0.5 md:px-3 md:py-1 bg-white/10 border border-white/10 rounded-full backdrop-blur-sm">
-                                    <span className="text-white text-xs md:text-sm font-medium">{year}</span>
-                                </div>
-                                {genres.map((genre, i) => (
-                                    <div key={i} className="px-2.5 py-0.5 md:px-3 md:py-1 bg-white/5 border border-white/5 rounded-full backdrop-blur-sm">
-                                        <span className="text-gray-200 text-[10px] md:text-xs font-medium">{genre}</span>
+                                {currentMovie.images?.logos?.[0] ? (
+                                    <div className="relative h-24 md:h-40 w-full max-w-[300px] md:max-w-md">
+                                        <Image
+                                            src={getImageUrl(currentMovie.images.logos[0].file_path, 'original', 'logo')}
+                                            alt={currentMovie.title}
+                                            fill
+                                            className="object-contain object-left"
+                                            priority
+                                        />
                                     </div>
-                                ))}
+                                ) : (
+                                    <h1 className="text-4xl md:text-7xl font-black text-white tracking-tighter leading-[0.9]">
+                                        {currentMovie.title}
+                                    </h1>
+                                )}
                             </motion.div>
                         </AnimatePresence>
 
-                        {/* Overview - Constrained width */}
-                        <AnimatePresence mode="wait">
-                            <motion.p
-                                key={`desc-${currentMovie.id}`}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="text-gray-300 text-sm md:text-lg leading-relaxed line-clamp-3 md:line-clamp-4 max-w-lg hidden md:block"
-                            >
-                                {truncateText(currentMovie.overview, 200)}
-                            </motion.p>
-                            {/* Mobile short overview */}
-                            <motion.p
-                                key={`desc-mobile-${currentMovie.id}`}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="text-gray-300 text-sm leading-relaxed line-clamp-2 md:hidden"
-                            >
-                                {truncateText(currentMovie.overview, 100)}
-                            </motion.p>
-                        </AnimatePresence>
+                        {/* Metadata Tags - Flat Style */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                            className="flex flex-wrap items-center gap-3"
+                        >
+                            <span className="px-2 py-1 bg-accent-primary text-white text-xs font-bold uppercase tracking-wider rounded-sm">
+                                Top Pick
+                            </span>
+                            <span className="text-white/80 font-medium">{year}</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-border" />
+                            <span className="text-accent-primary font-bold">★ {currentMovie.vote_average.toFixed(1)}</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-border" />
+                            <div className="flex gap-2">
+                                {genres.map(g => (
+                                    <span key={g} className="text-text-secondary text-sm">{g}</span>
+                                ))}
+                            </div>
+                        </motion.div>
 
-                        {/* Cineby Style Buttons */}
-                        <div className="flex flex-wrap items-center gap-3 md:gap-4 pt-2">
+                        {/* Description */}
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-text-secondary text-base md:text-lg leading-relaxed max-w-xl line-clamp-3"
+                        >
+                            {truncateText(currentMovie.overview, 220)}
+                        </motion.p>
+
+                        {/* Buttons - Modern 2D Flat */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="flex items-center gap-4 pt-2"
+                        >
                             <Link href={`/movie/${currentMovie.id}/watch`}>
-                                <button className="flex items-center gap-2 px-6 py-2.5 md:px-8 md:py-3 bg-white text-black rounded-lg font-bold text-sm md:text-base hover:bg-gray-200 transition-colors active:scale-95">
-                                    <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-                                    <span>Play</span>
+                                <button className="flex items-center gap-2 px-8 py-4 bg-accent-primary hover:bg-accent-hover text-white font-bold tracking-wide transition-colors rounded-sm shadow-flat">
+                                    <Play className="w-5 h-5 fill-current" />
+                                    WATCH NOW
                                 </button>
                             </Link>
 
                             <Link href={`/movie/${currentMovie.id}`}>
-                                <button className="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-lg font-medium text-sm md:text-base hover:bg-white/20 transition-colors active:scale-95">
-                                    <Info className="w-4 h-4 md:w-5 md:h-5" />
-                                    <span>See More</span>
+                                <button className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border-l-2 border-white/20 text-white font-semibold transition-colors">
+                                    <Info className="w-5 h-5" />
+                                    DETAILS
                                 </button>
                             </Link>
 
-                            {/* Watchlist Toggle - Minimalist Circle */}
                             {mounted && (
                                 <button
                                     onClick={handleWatchlistToggle}
-                                    className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm text-white hover:bg-white/10 transition-colors active:scale-95"
+                                    className={cn(
+                                        "flex items-center justify-center w-14 h-14 bg-background-card border border-border transition-colors hover:border-accent-primary ml-2",
+                                        inWatchlist ? "text-accent-primary" : "text-text-secondary"
+                                    )}
                                 >
                                     {inWatchlist ? (
-                                        <Check className="w-4 h-4 md:w-5 md:h-5" />
+                                        <Check className="w-6 h-6" />
                                     ) : (
-                                        <Plus className="w-4 h-4 md:w-5 md:h-5" />
+                                        <Plus className="w-6 h-6" />
                                     )}
                                 </button>
                             )}
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </div>
 
-            {/* Carousel Indicators - Refined & Hidden on Mobile */}
-            {featuredMovies.length > 1 && (
-                <div className="hidden md:flex absolute right-8 bottom-1/2 transform translate-y-1/2 flex-col gap-3">
-                    {featuredMovies.map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setCurrentIndex(index)}
-                            className={cn(
-                                'w-1.5 h-1.5 rounded-full transition-all duration-300',
-                                index === currentIndex
-                                    ? 'h-8 bg-accent-primary'
-                                    : 'bg-white/50 hover:bg-white'
-                            )}
-                        />
-                    ))}
-                </div>
-            )}
+            {/* Draggable Trigger Area */}
+            <div
+                className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing"
+                onMouseDown={() => setIsDragging(true)}
+                onMouseUp={() => setIsDragging(false)}
+                onMouseLeave={() => setIsDragging(false)}
+            >
+                {/* Invisible touch/drag surface */}
+                <motion.div
+                    className="w-full h-full"
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragStart={() => setIsDragging(true)}
+                    onDragEnd={(e, { offset, velocity }) => {
+                        setIsDragging(false);
+                        const swipe = offset.x; // Negative = Left, Positive = Right
+                        if (swipe < -100) {
+                            // Swiped Left -> Next Slide
+                            paginate(1);
+                        } else if (swipe > 100) {
+                            // Swiped Right -> Prev Slide
+                            paginate(-1);
+                        }
+                    }}
+                />
+            </div>
         </div>
     );
 }

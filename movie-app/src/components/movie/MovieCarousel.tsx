@@ -172,7 +172,7 @@ export function MovieCarousel({
                     onMouseLeave={handleMouseUp}
                     onMouseMove={handleMouseMove}
                     className={cn(
-                        'flex gap-4 overflow-x-auto hide-scrollbar pb-2',
+                        'flex gap-4 overflow-x-auto hide-scrollbar py-4 px-1',
                         showRank && 'pl-6',
                         isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'
                     )}

@@ -49,6 +49,37 @@ export async function getMoviesWithLogos(movies: Movie[]): Promise<Movie[]> {
     return [...enriched, ...movies.slice(5)];
 }
 
+// Helper to enrich movies with videos (for Shorts use)
+export async function getMoviesWithVideos(movies: Movie[]): Promise<Movie[]> {
+    const enriched = await Promise.all(
+        movies.map(async (movie) => {
+            try {
+                const details = await getMovieDetails(movie.id);
+                // Filter for official trailers if possible, or just take the first video
+                const videos = details.videos?.results || [];
+                const trailer = videos.find(v => v.type === 'Trailer') || videos[0];
+
+                // We'll attach the video key to the movie object if we modify the type, 
+                // but since Movie type doesn't have video key, we might need to rely on component fetching 
+                // OR we can pass the whole details. 
+                // Actually, let's just return the enriched movie with a new property if TS allows, 
+                // or just rely on the component to fetch individual videos to avoid rate limits?
+                // LIMITS: Fetching 20 movies * 1 request = 20 requests. Might be heavy.
+                // Better: Fetch top 10 movies for shorts.
+
+                if (trailer) {
+                    return { ...movie, video_key: trailer.key, images: details.images };
+                }
+                return { ...movie, images: details.images }; // Attempt to return images even if no trailer, though we filter later.
+            } catch {
+                return movie;
+            }
+        })
+    );
+    // Filter out movies without videos to ensure high quality shorts
+    return enriched.filter((m: any) => m.video_key) as Movie[];
+}
+
 // Fetch popular movies
 export async function getPopularMovies(page: number = 1): Promise<MovieListResponse> {
     const response = await tmdbApi.get(ENDPOINTS.popularMovies, { params: { page } });
