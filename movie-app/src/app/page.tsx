@@ -8,6 +8,8 @@ import { UserSections } from '@/components/home/UserSections';
 import { AwardsSection } from '@/components/home/AwardsSection';
 import { AnniversarySection } from '@/components/home/AnniversarySection';
 import { BecauseYouWatched } from '@/components/home/BecauseYouWatched';
+import { ForYouSection } from '@/components/home/ForYouSection';
+import { HindiMoviesSection } from '@/components/home/HindiMoviesSection';
 import { PLATFORMS } from '@/config/platforms';
 import {
   getTrendingMovies,
@@ -88,6 +90,9 @@ export default async function HomePage() {
           {/* Mood Discovery - New Feature */}
           <MoodPicker />
 
+          {/* For You - Based on Genre Preferences */}
+          <ForYouSection />
+
           {/* User Sections - Continue Watching & My List (client-side with cache) */}
           <UserSections />
 
@@ -99,6 +104,9 @@ export default async function HomePage() {
 
           {/* Released Today in History */}
           <AnniversarySection />
+
+          {/* Bollywood Hits - New Section */}
+          <HindiMoviesSection />
 
           {/* Trending */}
           <section className="container mx-auto px-4 md:px-8">

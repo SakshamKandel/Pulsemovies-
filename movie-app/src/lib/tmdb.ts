@@ -182,12 +182,27 @@ export async function discoverMovies(
         sort_by?: string;
         year?: number;
         'vote_average.gte'?: number;
+        'vote_count.gte'?: number;
+        'primary_release_date.gte'?: string;
+        'primary_release_date.lte'?: string;
         with_watch_providers?: string;
         watch_region?: string;
+        with_original_language?: string;
     } = {}
 ): Promise<MovieListResponse> {
     const response = await tmdbApi.get(ENDPOINTS.discoverMovie, { params });
     return response.data;
+}
+
+// Get popular Hindi/Bollywood movies
+export async function getHindiMovies(page: number = 1): Promise<MovieListResponse> {
+    return discoverMovies({
+        page,
+        with_original_language: 'hi',
+        sort_by: 'popularity.desc',
+        'vote_average.gte': 6.0,
+        'vote_count.gte': 100,
+    });
 }
 
 // Discover TV shows with filters

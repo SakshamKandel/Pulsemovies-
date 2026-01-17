@@ -35,13 +35,13 @@ export default async function BrowsePage() {
                 <div className="flex flex-wrap gap-3 mb-12">
                     <Link
                         href="/browse/movies"
-                        className="px-4 py-2 bg-accent-primary text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+                        className="inline-flex items-center justify-center px-4 py-2 bg-accent-primary text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
                     >
                         Movies
                     </Link>
                     <Link
                         href="/browse/series"
-                        className="px-4 py-2 bg-background-card text-text-secondary rounded-full text-sm font-medium hover:bg-accent-primary hover:text-white transition-colors"
+                        className="inline-flex items-center justify-center px-4 py-2 bg-background-card text-text-secondary rounded-full text-sm font-medium hover:bg-accent-primary hover:text-white transition-colors"
                     >
                         TV Shows
                     </Link>
@@ -50,7 +50,7 @@ export default async function BrowsePage() {
                             <Link
                                 key={id}
                                 href={`/browse?genre=${id}`}
-                                className="px-4 py-2 bg-background-card text-text-secondary rounded-full text-sm font-medium hover:bg-accent-primary hover:text-white transition-colors"
+                                className="inline-flex items-center justify-center px-4 py-2 bg-background-card text-text-secondary rounded-full text-sm font-medium hover:bg-accent-primary hover:text-white transition-colors"
                             >
                                 {MOVIE_GENRES[id]}
                             </Link>

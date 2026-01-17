@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useState } from 'react';
 import { KeyboardShortcutsProvider } from '@/hooks/useKeyboardShortcuts';
+import { GenreOnboarding } from '@/components/onboarding/GenreOnboarding';
 
 export function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(
@@ -23,6 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <KeyboardShortcutsProvider>
                 {children}
             </KeyboardShortcutsProvider>
+            <GenreOnboarding />
             <Toaster
                 position="bottom-right"
                 toastOptions={{

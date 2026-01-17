@@ -1,14 +1,15 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Star, Clock, Calendar, Play, Plus, Check } from 'lucide-react';
+import { ArrowLeft, Star, Calendar, Clock, Play, Plus, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
 import { formatRuntime, formatYear, getImageUrl } from '@/lib/utils';
 import { PlayerEmbed } from '@/components/player/VidKingEmbed';
-import { MovieCarousel } from '@/components/movie/MovieCarousel';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
 import type { MovieDetails, Movie } from '@/types/movie';
-import * as React from 'react';
+import { MovieCarousel } from '@/components/movie/MovieCarousel';
 
 interface WatchPageClientProps {
     movie: MovieDetails;
@@ -22,6 +23,7 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
 
     const year = formatYear(movie.release_date);
     const runtime = formatRuntime(movie.runtime);
+    const cast = movie.credits?.cast.slice(0, 15) || [];
 
     const handleWatchlistToggle = () => {
         if (inWatchlist) {
@@ -32,175 +34,197 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
     };
 
     return (
-        <div className="min-h-screen bg-background">
-            {/* Simple Dark Background */}
-            <div className="fixed inset-0 z-0 bg-[#0a0a0f]" />
+        <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-accent-primary/30 pt-24 md:pt-28">
 
-            <div className="relative z-10 pt-20 pb-16">
-                <div className="container mx-auto px-4 md:px-8">
-                    {/* Back Button - Simple */}
+            {/* Main Content Area */}
+            <main className="container mx-auto px-4 pb-12">
+
+                {/* Back Button */}
+                <div className="mb-6">
                     <Link
                         href={`/movie/${movie.id}`}
-                        className="inline-flex items-center gap-2 text-text-secondary hover:text-white mb-6 transition-colors"
+                        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
                     >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>Back to Details</span>
+                        <ArrowLeft className="w-5 h-5" />
+                        <span className="font-medium">Back to Details</span>
                     </Link>
+                </div>
 
-                    {/* Main Content Grid */}
-                    <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_340px] gap-8">
-                        {/* Left Column: Player and Info */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+
+                    {/* Left Column: Player & Info (Width: 9/12) */}
+                    <div className="lg:col-span-9 space-y-8">
+
+                        {/* Player Container */}
+                        <div className="w-full bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 relative">
+                            <div className="aspect-video w-full">
+                                <PlayerEmbed
+                                    tmdbId={movie.id}
+                                    type="movie"
+                                    movieTitle={movie.title}
+                                    posterPath={movie.poster_path || undefined}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Movie Information */}
                         <div className="space-y-6">
-                            {/* Clean Player Container */}
-                            <div className="aspect-video rounded-lg overflow-hidden bg-black">
-                                <PlayerEmbed tmdbId={movie.id} type="movie" />
+                            {/* Header: Logo/Title & Actions */}
+                            <div className="flex flex-col md:flex-row gap-6 md:items-start justify-between">
+                                <div className="space-y-4 flex-1">
+                                    {logo ? (
+                                        <div className="relative h-20 w-64 md:h-24 md:w-80">
+                                            <Image
+                                                src={getImageUrl(logo.file_path, 'original', 'logo')}
+                                                alt={movie.title}
+                                                fill
+                                                className="object-contain object-left"
+                                                priority
+                                            />
+                                        </div>
+                                    ) : (
+                                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+                                            {movie.title}
+                                        </h1>
+                                    )}
+
+                                    {/* Metadata Row */}
+                                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-300">
+                                        <div className="flex items-center gap-1.5 text-yellow-400 font-medium">
+                                            <Star className="w-4 h-4 fill-current" />
+                                            {movie.vote_average.toFixed(1)}
+                                        </div>
+                                        <span>{year}</span>
+                                        <span>{runtime}</span>
+                                        <div className="flex gap-2">
+                                            {movie.genres.slice(0, 3).map(g => (
+                                                <Badge key={g.id} variant="outline" className="border-white/10 hover:bg-white/5 text-gray-300">
+                                                    {g.name}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex-shrink-0">
+                                    <button
+                                        onClick={handleWatchlistToggle}
+                                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all w-full md:w-auto ${inWatchlist
+                                                ? 'bg-accent-primary text-white hover:bg-accent-hover'
+                                                : 'bg-white/10 text-white hover:bg-white/20'
+                                            }`}
+                                    >
+                                        {inWatchlist ? (
+                                            <>
+                                                <Check className="w-5 h-5" /> In Watchlist
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Plus className="w-5 h-5" /> Add to Watchlist
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
-                            {/* Movie Info Section */}
-                            <div className="space-y-5">
-                                {/* Logo or Title */}
-                                {logo ? (
-                                    <div className="relative h-20 md:h-24 w-56 md:w-72">
-                                        <Image
-                                            src={getImageUrl(logo.file_path, 'original', 'logo')}
-                                            alt={movie.title}
-                                            fill
-                                            className="object-contain object-left"
-                                            priority
-                                        />
-                                    </div>
-                                ) : (
-                                    <h1 className="text-3xl md:text-4xl font-bold text-white">
-                                        {movie.title}
-                                    </h1>
-                                )}
+                            {/* Overview */}
+                            <p className="text-gray-300 text-lg leading-relaxed max-w-4xl">
+                                {movie.overview}
+                            </p>
 
-                                {/* Meta Info - Clean inline style */}
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                                    {/* Rating */}
-                                    <div className="flex items-center gap-1.5 text-yellow-400">
-                                        <Star className="w-4 h-4 fill-current" />
-                                        <span className="font-semibold">{movie.vote_average.toFixed(1)}</span>
-                                    </div>
-
-                                    {/* Year */}
-                                    <div className="flex items-center gap-1.5 text-text-secondary">
-                                        <Calendar className="w-4 h-4" />
-                                        <span>{year}</span>
-                                    </div>
-
-                                    {/* Runtime */}
-                                    <div className="flex items-center gap-1.5 text-text-secondary">
-                                        <Clock className="w-4 h-4" />
-                                        <span>{runtime}</span>
-                                    </div>
-
-                                    {/* Separator */}
-                                    <span className="hidden md:inline text-text-muted">•</span>
-
-                                    {/* Genres - Simple text */}
-                                    <div className="flex flex-wrap gap-2">
-                                        {movie.genres.slice(0, 3).map((genre, i) => (
-                                            <span key={genre.id} className="text-text-secondary">
-                                                {genre.name}{i < Math.min(movie.genres.length, 3) - 1 && ','}
-                                            </span>
+                            {/* Cast Section */}
+                            {cast.length > 0 && (
+                                <div className="pt-6 border-t border-white/5">
+                                    <h3 className="text-lg font-semibold text-white mb-4">Top Cast</h3>
+                                    {/* Clean horizontal scroll for cast */}
+                                    <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+                                        {cast.map((person) => (
+                                            <div key={person.id} className="flex-shrink-0 w-28 text-center group">
+                                                <div className="relative w-24 h-24 mx-auto mb-3 rounded-full overflow-hidden border-2 border-transparent group-hover:border-accent-primary transition-colors bg-zinc-800">
+                                                    {person.profile_path ? (
+                                                        <Image
+                                                            src={getImageUrl(person.profile_path, 'small', 'profile')}
+                                                            alt={person.name}
+                                                            fill
+                                                            className="object-cover transition-transform group-hover:scale-110"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
+                                                            N/A
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm font-medium text-white truncate group-hover:text-accent-primary transition-colors">
+                                                    {person.name}
+                                                </p>
+                                                <p className="text-xs text-gray-500 truncate">
+                                                    {person.character}
+                                                </p>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
-
-                                {/* Overview */}
-                                <p className="text-text-secondary leading-relaxed max-w-3xl">
-                                    {movie.overview}
-                                </p>
-
-                                {/* Action Button - Simple */}
-                                <button
-                                    onClick={handleWatchlistToggle}
-                                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-colors ${inWatchlist
-                                            ? 'bg-accent-primary text-white'
-                                            : 'bg-white/10 text-white hover:bg-white/15'
-                                        }`}
-                                >
-                                    {inWatchlist ? (
-                                        <>
-                                            <Check className="w-4 h-4" />
-                                            In My List
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Plus className="w-4 h-4" />
-                                            Add to List
-                                        </>
-                                    )}
-                                </button>
-                            </div>
+                            )}
                         </div>
+                    </div>
 
-                        {/* Right Sidebar: More Like This */}
-                        <div className="hidden lg:block">
-                            <div className="sticky top-24">
-                                {/* Section Header */}
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="w-1 h-5 bg-accent-primary rounded-full" />
-                                    <h3 className="text-lg font-semibold text-white">More Like This</h3>
-                                </div>
+                    {/* Right Column: Sidebar (Width: 3/12) */}
+                    <div className="lg:col-span-3 space-y-6">
+                        <div className="sticky top-28">
+                            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                <span className="w-1 h-6 bg-accent-primary rounded-full" />
+                                More Like This
+                            </h3>
 
-                                {/* Similar Movies List */}
-                                <div className="space-y-3 max-h-[calc(100vh-180px)] overflow-y-auto custom-scrollbar pr-1">
-                                    {similar.slice(0, 8).map((item: any) => (
-                                        <Link
-                                            key={item.id}
-                                            href={`/movie/${item.id}/watch`}
-                                            className="group flex gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors"
-                                        >
-                                            {/* Thumbnail */}
-                                            <div className="relative w-24 h-14 flex-shrink-0 rounded-md overflow-hidden bg-background-card">
-                                                {item.backdrop_path ? (
-                                                    <>
-                                                        <Image
-                                                            src={getImageUrl(item.backdrop_path, 'small', 'backdrop')}
-                                                            alt={item.title}
-                                                            fill
-                                                            className="object-cover"
-                                                        />
-                                                        {/* Play icon on hover */}
-                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                            <Play className="w-6 h-6 text-white fill-white" />
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-white/5">
-                                                        <Play className="w-5 h-5 text-text-muted" />
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Info */}
-                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                <h4 className="font-medium text-white text-sm line-clamp-1 group-hover:text-accent-primary transition-colors">
-                                                    {item.title}
-                                                </h4>
-                                                <div className="flex items-center gap-2 mt-1 text-xs text-text-muted">
-                                                    <div className="flex items-center gap-1">
-                                                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                                        <span>{item.vote_average.toFixed(1)}</span>
-                                                    </div>
-                                                    <span>{formatYear(item.release_date)}</span>
+                            {/* Scrollable list for Sidebar */}
+                            <div className="space-y-3 max-h-[calc(100vh-150px)] overflow-y-auto custom-scrollbar pr-2">
+                                {similar.slice(0, 10).map((item) => (
+                                    <Link
+                                        key={item.id}
+                                        href={`/movie/${item.id}/watch`}
+                                        className="flex gap-3 p-2 rounded-xl group hover:bg-white/5 transition-colors"
+                                    >
+                                        <div className="relative w-32 aspect-video bg-zinc-800 rounded-lg overflow-hidden flex-shrink-0">
+                                            {item.backdrop_path ? (
+                                                <Image
+                                                    src={getImageUrl(item.backdrop_path, 'small', 'backdrop')}
+                                                    alt={item.title}
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <Play className="w-8 h-8 text-white/20" />
                                                 </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                            <h4 className="text-sm font-medium text-white line-clamp-2 group-hover:text-accent-primary transition-colors">
+                                                {item.title}
+                                            </h4>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                                <span className="text-xs text-gray-400">{item.vote_average.toFixed(1)}</span>
                                             </div>
-                                        </Link>
-                                    ))}
-                                </div>
+                                        </div>
+                                    </Link>
+                                ))}
                             </div>
+
+                            {similar.length === 0 && (
+                                <div className="text-gray-500 text-sm">No similar movies available.</div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Mobile Similar Movies */}
-                    <div className="mt-12 lg:hidden">
-                        <MovieCarousel title="More Like This" items={similar} />
+                    {/* Mobile Only: Recommendation Carousel at bottom if needed */}
+                    <div className="lg:hidden col-span-1 border-t border-white/5 pt-8">
+                        <MovieCarousel title="You May Also Like" items={similar} />
                     </div>
+
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

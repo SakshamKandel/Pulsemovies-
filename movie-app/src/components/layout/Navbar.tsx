@@ -41,23 +41,25 @@ export function Navbar() {
         <>
             <header
                 className={cn(
-                    'fixed top-0 left-0 right-0 z-50 transition-all duration-300 pointer-events-none',
+                    'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
                     scrolled || isMobileMenuOpen
                         ? 'bg-background border-b border-border'
                         : 'bg-gradient-to-b from-black/80 to-transparent'
                 )}
             >
-                <nav className="container mx-auto px-4 h-16 flex items-center justify-between pointer-events-auto">
+                <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 -my-4">
-                        <Image
-                            src="/images/logo.png"
-                            alt="Pulse Movies"
-                            width={500}
-                            height={160}
-                            className="h-32 md:h-40 w-auto object-contain"
-                            priority
-                        />
+                    <Link href="/" className="flex items-center gap-2">
+                        <div className="relative h-16 w-36 overflow-hidden flex items-center justify-center">
+                            <Image
+                                src="/images/logo.png"
+                                alt="Pulse Movies"
+                                width={160}
+                                height={50}
+                                className="object-contain scale-150"
+                                priority
+                            />
+                        </div>
                     </Link>
 
                     {/* Desktop Navigation */}

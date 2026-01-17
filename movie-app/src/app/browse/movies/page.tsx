@@ -1,4 +1,4 @@
-import { getPopularMovies, getTopRatedMovies, getNowPlayingMovies, getUpcomingMovies, getTrendingMovies, getMoviesByGenre } from '@/lib/tmdb';
+import { getPopularMovies, getTopRatedMovies, getNowPlayingMovies, getUpcomingMovies, getTrendingMovies, getMoviesByGenre, getHindiMovies } from '@/lib/tmdb';
 import { MovieCard } from '@/components/movie/MovieCard';
 import { MOVIE_GENRES } from '@/lib/constants';
 import Link from 'next/link';
@@ -10,19 +10,23 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-    searchParams: Promise<{ sort?: string; genre?: string }>;
+    searchParams: Promise<{ sort?: string; genre?: string; language?: string }>;
 }
 
 export default async function MoviesPage({ searchParams }: PageProps) {
     const params = await searchParams;
     const sort = params.sort;
     const genre = params.genre;
+    const language = params.language;
 
     // Fetch movies based on parameters
     let movies;
     let pageTitle = 'Movies';
 
-    if (genre) {
+    if (language === 'hi') {
+        movies = await getHindiMovies();
+        pageTitle = 'Bollywood Movies';
+    } else if (genre) {
         // Genre filtering (takes precedence over sort for now, or we could combine them if API supports it nicely)
         // Getting the genre name safely
         const genreId = parseInt(genre);
@@ -76,8 +80,8 @@ export default async function MoviesPage({ searchParams }: PageProps) {
                                 key={id}
                                 href={`/browse/movies?genre=${id}`}
                                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${genre === id
-                                        ? 'bg-accent-primary border-accent-primary text-white'
-                                        : 'bg-white/5 border-white/10 text-text-muted hover:bg-accent-primary/20 hover:text-white hover:border-accent-primary/50'
+                                    ? 'bg-accent-primary border-accent-primary text-white'
+                                    : 'bg-white/5 border-white/10 text-text-muted hover:bg-accent-primary/20 hover:text-white hover:border-accent-primary/50'
                                     }`}
                             >
                                 {name}
@@ -86,8 +90,8 @@ export default async function MoviesPage({ searchParams }: PageProps) {
                         <Link
                             href="/browse/movies"
                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${!genre
-                                    ? 'bg-white/10 border-white/20 text-white'
-                                    : 'bg-transparent border-transparent text-text-muted hover:text-white'
+                                ? 'bg-white/10 border-white/20 text-white'
+                                : 'bg-transparent border-transparent text-text-muted hover:text-white'
                                 }`}
                         >
                             Clear Filter
@@ -102,8 +106,8 @@ export default async function MoviesPage({ searchParams }: PageProps) {
                                     key={option.key}
                                     href={`/browse/movies?sort=${option.key}`}
                                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${sort === option.key || (!sort && option.key === 'popular')
-                                            ? 'bg-white text-black'
-                                            : 'bg-background-card text-text-secondary hover:bg-white/10 hover:text-white'
+                                        ? 'bg-white text-black'
+                                        : 'bg-background-card text-text-secondary hover:bg-white/10 hover:text-white'
                                         }`}
                                 >
                                     {option.label}
