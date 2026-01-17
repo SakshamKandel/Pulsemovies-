@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export', // Static export for Cloudflare Pages
   images: {
-    unoptimized: true, // Bypass Vercel image optimization limits - loads directly from TMDB CDN
+    unoptimized: true, // Required for static export
     remotePatterns: [
       {
         protocol: 'https',
@@ -11,7 +12,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Enable React strict mode for better development experience
   reactStrictMode: true,
 };
 
