@@ -1,61 +1,105 @@
-# Deploying to Vercel
+# Deploying to Cloudflare Pages
 
-This guide will help you deploy your Movie Streaming Platform to [Vercel](https://vercel.com), the creators of Next.js and the best platform for hosting it.
+This guide covers deploying your Next.js Movie Streaming Platform to **Cloudflare Pages** - a free hosting service with **unlimited bandwidth** and global CDN.
 
 ## Prerequisites
 
-- A GitHub account (where your code is hosted)
-- A Vercel account (sign up at vercel.com using GitHub)
+- A GitHub account (with your code pushed)
+- A Cloudflare account (free at [cloudflare.com](https://cloudflare.com))
 
-## Deployment Steps
+## Step 1: Navigate to Cloudflare Pages
 
-1. **Push to GitHub**
-   Ensure your latest code is pushed to your GitHub repository.
-   ```bash
-   git add .
-   git commit -m "Ready for deployment"
-   git push origin main
-   ```
+1. **Sign in** to your Cloudflare account at [dash.cloudflare.com](https://dash.cloudflare.com)
+2. In the left sidebar, look for **"Workers & Pages"** (under the Build section)
+   - OR click on **"Developer Platform"** tab at the top
+3. Click **"Pages"** or **"Create application"** → **"Pages"**
 
-2. **Import Project to Vercel**
-   - Go to your [Vercel Dashboard](https://vercel.com/dashboard).
-   - Click **"Add New..."** -> **"Project"**.
-   - Find your `movie-app` repository in the list and click **"Import"**.
+## Step 2: Connect to Git
 
-3. **Configure Project**
-   - **Framework Preset**: Should automatically detect `Next.js`.
-   - **Root Directory**: Ensure this is set to `./` (or `movie-app` if it's in a subdirectory of your repo, but based on your structure, it seems to be the root).
-     - *Note*: If your repo root *is* the folder containing `package.json`, leave it as root. If `movie-app` is a folder *inside* your git repo, click "Edit" and select the `movie-app` folder.
+1. Click **"Connect to Git"**
+2. Select **GitHub** and authorize Cloudflare
+3. Find and select your repository: **`Pulsemovies-`**
+4. Click **"Begin setup"**
 
-4. **Environment Variables (Crucial)**
-   Expand the **"Environment Variables"** section. You need to copy the values from your local `.env.local` file. Add the following pairs:
+## Step 3: Configure Build Settings
 
-   | Key | Value (Example/Description) |
-   |-----|-----------------------------|
-   | `NEXT_PUBLIC_TMDB_API_KEY` | `eda3f911cf7b26e9d911b7609d276198` |
-   | `NEXT_PUBLIC_TMDB_BASE_URL` | `https://api.themoviedb.org/3` |
-   | `NEXT_PUBLIC_TMDB_IMAGE_BASE_URL` | `https://image.tmdb.org/t/p` |
-   | `NEXT_PUBLIC_SITE_NAME` | `Pulse` |
-   | `NEXT_PUBLIC_SITE_URL` | `https://your-project-name.vercel.app` (You can update this after deploy if needed) |
+| Setting | Value |
+|---------|-------|
+| **Project name** | `pulsemovies` (or your choice) |
+| **Production branch** | `main` |
+| **Framework preset** | `Next.js` |
+| **Root directory (path)** | `movie-app` |
+| **Build command** | `npm run build` |
+| **Build output directory** | `.next` |
 
-5. **Deploy**
-   - Click **"Deploy"**.
-   - Vercel will build your project. Wait for a minute or two.
-   - Once finished, you will see a success screen with a screenshot of your app!
+## Step 4: Add Environment Variables
 
-## Post-Deployment
+Scroll down to **"Environment variables"** section. Click **"Add variable"** for each:
 
-- **Custom Domain**: Go to **Settings** -> **Domains** to add your own domain (e.g., `pulsemovies.com`) if you have one.
-- **Redeployment**: Every time you push to your GitHub `main` branch, Vercel will automatically redeploy your site.
+| Variable name | Value |
+|---------------|-------|
+| `NEXT_PUBLIC_TMDB_API_KEY` | `eda3f911cf7b26e9d911b7609d276198` |
+| `NEXT_PUBLIC_TMDB_BASE_URL` | `https://api.themoviedb.org/3` |
+| `NEXT_PUBLIC_TMDB_IMAGE_BASE_URL` | `https://image.tmdb.org/t/p` |
+| `NEXT_PUBLIC_SITE_NAME` | `Pulse` |
+| `NEXT_PUBLIC_SITE_URL` | `https://pulsemovies.pages.dev` |
+| `NODE_VERSION` | `18` |
+
+## Step 5: Deploy
+
+1. Click **"Save and Deploy"**
+2. Wait for the build (2-5 minutes)
+3. Once complete, you'll get a URL like: `https://pulsemovies.pages.dev`
+
+## Step 6: Access Your App
+
+Your app is now live at:
+- **Production URL**: `https://pulsemovies.pages.dev`
+- **Preview URLs**: Created for each branch/PR
+
+## Adding a Custom Domain (Optional)
+
+1. Go to your Pages project → **"Custom domains"** tab
+2. Click **"Set up a custom domain"**
+3. Enter your domain (e.g., `pulsemovies.com`)
+4. Follow the DNS instructions provided
+
+## Automatic Deployments
+
+Cloudflare Pages automatically deploys:
+- Every push to `main` → Production
+- Every push to other branches → Preview URL
 
 ## Troubleshooting
 
-### Accidentally Deleted Domain?
-If you deleted the default domain (e.g., `movie-app.vercel.app`) or want to add a new one:
+### Build Fails?
+1. Click on the failed deployment to see logs
+2. Common fixes:
+   - Ensure `Root directory (path)` is set to `movie-app`
+   - Add `NODE_VERSION=18` to environment variables
+   - Check for TypeScript/build errors
 
-1. Go to your **Project Dashboard** on Vercel.
-2. Click on **Settings** (top menu).
-3. Select **Domains** (left sidebar).
-4. In the input box, type the domain you want (e.g., `your-project-name.vercel.app` or a custom domain).
-5. Click **Add**.
-6. Vercel will automatically configure it. If using a custom domain, follow the DNS instructions provided.
+### Images Not Loading?
+Add this to your `next.config.ts`:
+```ts
+const nextConfig = {
+  images: {
+    unoptimized: true,
+  },
+};
+```
+
+### 404 on Routes?
+Cloudflare Pages handles Next.js routing automatically. If issues persist, ensure you're using the Next.js framework preset.
+
+## Why Cloudflare Pages?
+
+| Feature | Cloudflare Pages |
+|---------|------------------|
+| **Bandwidth** | ✅ Unlimited (free!) |
+| **Builds** | 500/month |
+| **Custom domains** | Unlimited |
+| **SSL** | ✅ Free |
+| **Global CDN** | ✅ 300+ locations |
+
+Perfect for your movie streaming platform!
