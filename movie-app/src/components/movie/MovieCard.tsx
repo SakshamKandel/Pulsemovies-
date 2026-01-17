@@ -66,8 +66,13 @@ export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps)
                         onError={() => setImageError(true)}
                     />
                 ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background-card border border-white/5 p-4 text-center">
-                        <span className="text-sm font-medium text-text-muted">{title}</span>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-800 border border-white/5 p-4 text-center gap-2">
+                        {isMovie ? (
+                            <div className="text-4xl">🎬</div>
+                        ) : (
+                            <div className="text-4xl">📺</div>
+                        )}
+                        <span className="text-xs font-medium text-text-muted line-clamp-3">{title}</span>
                     </div>
                 )}
 

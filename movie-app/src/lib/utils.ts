@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
 
 // Build TMDB image URL
 export function getImageUrl(
-    path: string | null,
+    path: string | null | undefined,
     size: 'small' | 'medium' | 'large' | 'original' = 'medium',
     type: 'poster' | 'backdrop' | 'profile' | 'logo' = 'poster'
 ): string {

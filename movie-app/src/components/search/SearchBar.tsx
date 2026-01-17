@@ -50,17 +50,24 @@ export function SearchBar() {
         }
 
         setIsLoading(true);
+        setIsLoading(true);
         debounceRef.current = setTimeout(async () => {
             try {
                 const data = await searchMulti(query);
-                // Filter out people and limit to 8 results
-                const filtered = data.results
-                    .filter((item): item is Movie | TVShow => item.media_type !== 'person')
-                    .slice(0, 8);
-                setResults(filtered);
+                if (data && data.results) {
+                    // Filter out people and limit to 8 results
+                    const filtered = data.results
+                        .filter((item): item is Movie | TVShow => item.media_type !== 'person')
+                        .slice(0, 8);
+                    setResults(filtered);
+                } else {
+                    setResults([]);
+                }
                 setShowResults(true);
             } catch (error) {
                 console.error('Search error:', error);
+                setResults([]);
+                setShowResults(true);
             } finally {
                 setIsLoading(false);
             }
@@ -164,7 +171,7 @@ export function SearchBar() {
 
             {/* Search Results Dropdown */}
             <AnimatePresence>
-                {showResults && results.length > 0 && (
+                {showResults && (
                     <motion.div
                         initial={{ opacity: 0, y: -10, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -172,80 +179,90 @@ export function SearchBar() {
                         className="absolute top-full left-0 right-0 mt-3 bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100] pointer-events-auto"
                         style={{ pointerEvents: 'auto' }}
                     >
-                        <div className="p-2">
-                            {results.map((item, index) => {
-                                const title = getContentTitle(item);
-                                const isMovieItem = isMovie(item);
-                                const href = isMovieItem ? `/movie/${item.id}` : `/tv/${item.id}`;
-                                const posterUrl = getImageUrl(item.poster_path, 'small', 'poster');
-                                const year = isMovieItem
-                                    ? (item as Movie).release_date?.slice(0, 4)
-                                    : (item as TVShow).first_air_date?.slice(0, 4);
+                        {results.length > 0 ? (
+                            <>
+                                <div className="p-2">
+                                    {results.map((item, index) => {
+                                        const title = getContentTitle(item);
+                                        const isMovieItem = isMovie(item);
+                                        const href = isMovieItem ? `/movie/${item.id}` : `/tv/${item.id}`;
+                                        const posterUrl = getImageUrl(item.poster_path, 'small', 'poster');
+                                        const year = isMovieItem
+                                            ? (item as Movie).release_date?.slice(0, 4)
+                                            : (item as TVShow).first_air_date?.slice(0, 4);
 
-                                return (
-                                    <motion.div
-                                        key={item.id}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: index * 0.03 }}
-                                    >
-                                        <Link
-                                            href={href}
-                                            onClick={handleResultClick}
-                                            className="flex items-center gap-4 p-3 rounded-xl hover:bg-accent-primary/10 transition-colors group"
-                                        >
-                                            {/* Poster */}
-                                            <div className="relative w-14 h-20 rounded-lg overflow-hidden bg-background-secondary flex-shrink-0">
-                                                {item.poster_path ? (
-                                                    <Image
-                                                        src={posterUrl}
-                                                        alt={title}
-                                                        fill
-                                                        className="object-cover group-hover:scale-105 transition-transform"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-text-muted">
-                                                        {isMovieItem ? <Film className="w-5 h-5" /> : <Tv className="w-5 h-5" />}
+                                        return (
+                                            <motion.div
+                                                key={item.id}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: index * 0.03 }}
+                                            >
+                                                <Link
+                                                    href={href}
+                                                    onClick={handleResultClick}
+                                                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-accent-primary/10 transition-colors group"
+                                                >
+                                                    {/* Poster */}
+                                                    <div className="relative w-14 h-20 rounded-lg overflow-hidden bg-background-secondary flex-shrink-0">
+                                                        {item.poster_path ? (
+                                                            <Image
+                                                                src={posterUrl}
+                                                                alt={title}
+                                                                fill
+                                                                className="object-cover group-hover:scale-105 transition-transform"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-text-muted bg-zinc-800">
+                                                                {isMovieItem ? <Film className="w-5 h-5" /> : <Tv className="w-5 h-5" />}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
 
-                                            {/* Info */}
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="text-white font-medium truncate group-hover:text-accent-primary transition-colors">
-                                                    {title}
-                                                </h4>
-                                                <div className="flex items-center gap-2 text-text-secondary text-sm mt-1">
-                                                    <span className={cn(
-                                                        'px-2 py-0.5 rounded text-xs',
-                                                        isMovieItem ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'
-                                                    )}>
-                                                        {isMovieItem ? 'Movie' : 'TV'}
-                                                    </span>
-                                                    {year && <span>{year}</span>}
-                                                </div>
-                                            </div>
+                                                    {/* Info */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-white font-medium truncate group-hover:text-accent-primary transition-colors">
+                                                            {title}
+                                                        </h4>
+                                                        <div className="flex items-center gap-2 text-text-secondary text-sm mt-1">
+                                                            <span className={cn(
+                                                                'px-2 py-0.5 rounded text-xs',
+                                                                isMovieItem ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'
+                                                            )}>
+                                                                {isMovieItem ? 'Movie' : 'TV'}
+                                                            </span>
+                                                            {year && <span>{year}</span>}
+                                                        </div>
+                                                    </div>
 
-                                            {/* Rating */}
-                                            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 text-sm">
-                                                <span>★</span>
-                                                <span>{item.vote_average.toFixed(1)}</span>
-                                            </div>
-                                        </Link>
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
+                                                    {/* Rating */}
+                                                    <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 text-sm">
+                                                        <span>★</span>
+                                                        <span>{item.vote_average.toFixed(1)}</span>
+                                                    </div>
+                                                </Link>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
 
-                        {/* View All Results */}
-                        <Link
-                            href={`/search?q=${encodeURIComponent(query)}`}
-                            onClick={handleResultClick}
-                            className="flex items-center justify-center gap-2 p-4 text-accent-primary hover:bg-accent-primary/10 transition-colors border-t border-border"
-                        >
-                            <TrendingUp className="w-4 h-4" />
-                            View all results for &quot;{query}&quot;
-                        </Link>
+                                {/* View All Results */}
+                                <Link
+                                    href={`/search?q=${encodeURIComponent(query)}`}
+                                    onClick={handleResultClick}
+                                    className="flex items-center justify-center gap-2 p-4 text-accent-primary hover:bg-accent-primary/10 transition-colors border-t border-border"
+                                >
+                                    <TrendingUp className="w-4 h-4" />
+                                    View all results for &quot;{query}&quot;
+                                </Link>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-12 text-text-muted">
+                                <Search className="w-12 h-12 mb-4 opacity-20" />
+                                <p className="text-lg font-medium">No results found</p>
+                                <p className="text-sm">Try searching for something else</p>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
