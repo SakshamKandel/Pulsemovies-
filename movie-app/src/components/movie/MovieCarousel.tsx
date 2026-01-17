@@ -30,18 +30,25 @@ export function MovieCarousel({
 }: MovieCarouselProps) {
     const { isDeepCutsEnabled } = useDiscoveryStore();
 
-    // Filter for "Deep Cuts" (Hidden Gems)
+    // Filter for "Deep Cuts" (Hidden Gems) and exclude items without posters
     // Rule: Hide popular content (high vote count) to surface lesser-known high-rated content.
     const displayedItems = React.useMemo(() => {
-        if (!isDeepCutsEnabled || !items) return items;
-        return items.filter(item => {
-            // Check if vote_count exists (it should for TMDB objects)
-            const votes = (item as any).vote_count || 0;
-            const rating = (item as any).vote_average || 0;
-            // "Deep Cut" definition: < 3000 votes but decent rating (> 6.0)
-            // Or just hide the massive blockbusters (> 5000 votes)
-            return votes < 3000;
-        });
+        if (!items) return items;
+
+        // Always filter out items without posters
+        let filtered = items.filter(item => item.poster_path);
+
+        // Apply deep cuts filter if enabled
+        if (isDeepCutsEnabled) {
+            filtered = filtered.filter(item => {
+                // Check if vote_count exists (it should for TMDB objects)
+                const votes = (item as any).vote_count || 0;
+                // "Deep Cut" definition: < 3000 votes
+                return votes < 3000;
+            });
+        }
+
+        return filtered;
     }, [items, isDeepCutsEnabled]);
 
     const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -146,20 +153,20 @@ export function MovieCarousel({
                     <button
                         onClick={() => scroll('left')}
                         className={cn(
-                            'hidden md:block p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors',
+                            'hidden md:flex items-center justify-center p-1 text-white/60 hover:text-white transition-colors',
                             !canScrollLeft && 'opacity-30 pointer-events-none'
                         )}
                     >
-                        <ChevronLeft className="w-4 h-4 text-white" />
+                        <ChevronLeft className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => scroll('right')}
                         className={cn(
-                            'hidden md:block p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors',
+                            'hidden md:flex items-center justify-center p-1 text-white/60 hover:text-white transition-colors',
                             !canScrollRight && 'opacity-30 pointer-events-none'
                         )}
                     >
-                        <ChevronRight className="w-4 h-4 text-white" />
+                        <ChevronRight className="w-5 h-5" />
                     </button>
 
                     {/* See More Link */}

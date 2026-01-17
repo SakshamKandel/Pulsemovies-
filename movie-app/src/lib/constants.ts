@@ -128,4 +128,5 @@ export const NAV_ITEMS = [
     { label: 'Movies', href: '/browse/movies' },
     { label: 'TV Shows', href: '/browse/series' },
     { label: 'My List', href: '/my-list' },
+    { label: 'History', href: '/history' },
 ];

@@ -32,7 +32,6 @@ export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps)
     const rating = item.vote_average;
     const posterUrl = getImageUrl(item.poster_path, 'medium', 'poster');
     const href = isMovie ? `/movie/${item.id}` : `/tv/${item.id}`;
-    const watchHref = isMovie ? `/movie/${item.id}/watch` : `/tv/${item.id}/watch`;
 
     const handleWatchlistToggle = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -57,7 +56,7 @@ export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps)
 
             {/* Card Image Container - Link to detail page */}
             <Link href={href} className="block relative aspect-[2/3] bg-background-card rounded-xl overflow-hidden transition-all duration-300 z-10">
-                {!imageError ? (
+                {!imageError && item.poster_path ? (
                     <Image
                         src={posterUrl}
                         alt={title}

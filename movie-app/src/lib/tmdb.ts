@@ -270,4 +270,106 @@ export async function getMovieRecommendations(id: number): Promise<MovieListResp
     return response.data;
 }
 
+// Get movie trailer key for hover preview
+export async function getMovieTrailerKey(id: number): Promise<string | null> {
+    try {
+        const response = await tmdbApi.get(`/movie/${id}/videos`);
+        const videos = response.data.results || [];
+        // Prioritize official trailers, then teasers, then any video
+        const trailer = videos.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube')
+            || videos.find((v: any) => v.type === 'Teaser' && v.site === 'YouTube')
+            || videos.find((v: any) => v.site === 'YouTube');
+        return trailer ? trailer.key : null;
+    } catch {
+        return null;
+    }
+}
+
+// Get award-winning / Oscar-caliber movies (use top rated which gives true classics)
+export async function getAwardWinningMovies(page: number = 1): Promise<MovieListResponse> {
+    // Use the top_rated endpoint which gives actual classics like Shawshank, Godfather, etc.
+    const response = await tmdbApi.get('/movie/top_rated', {
+        params: { page }
+    });
+    return response.data;
+}
+
+// Get movies released on today's date in history (anniversary releases)
+export async function getAnniversaryReleases(): Promise<MovieListResponse> {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const currentYear = today.getFullYear();
+
+    // Years to check (5, 10, 15, 20, 25, 30, 35, 40 years ago)
+    const yearsToCheck = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+        .map(y => currentYear - y)
+        .filter(y => y >= 1970); // TMDB data is limited before 1970
+
+    const allMovies: Movie[] = [];
+
+    // Query TMDB for movies released on this exact date across multiple years
+    for (const year of yearsToCheck) {
+        const targetDate = `${year}-${month}-${day}`;
+
+        try {
+            const response = await discoverMovies({
+                sort_by: 'popularity.desc',
+                'primary_release_date.gte': targetDate,
+                'primary_release_date.lte': targetDate,
+                'vote_count.gte': 100, // Ensure some popularity
+            });
+
+            if (response.results && response.results.length > 0) {
+                allMovies.push(...response.results);
+            }
+        } catch {
+            // Continue on error
+        }
+    }
+
+    // If we don't have enough movies, expand to nearby dates (1 day before/after)
+    if (allMovies.length < 5) {
+        for (const year of yearsToCheck.slice(0, 5)) {
+            const dayNum = parseInt(day);
+            const monthNum = parseInt(month);
+
+            // Try day before and day after
+            for (const offset of [-1, 1]) {
+                const newDay = dayNum + offset;
+                if (newDay >= 1 && newDay <= 28) { // Safe range
+                    const targetDate = `${year}-${month}-${String(newDay).padStart(2, '0')}`;
+
+                    try {
+                        const response = await discoverMovies({
+                            sort_by: 'popularity.desc',
+                            'primary_release_date.gte': targetDate,
+                            'primary_release_date.lte': targetDate,
+                            'vote_count.gte': 50,
+                        });
+
+                        if (response.results && response.results.length > 0) {
+                            allMovies.push(...response.results.slice(0, 3));
+                        }
+                    } catch {
+                        // Continue on error
+                    }
+                }
+            }
+        }
+    }
+
+    // Deduplicate by ID and filter out items without posters
+    const uniqueMovies = Array.from(new Map(allMovies.map(m => [m.id, m])).values())
+        .filter(m => m.poster_path);
+
+    return {
+        page: 1,
+        results: uniqueMovies.slice(0, 20),
+        total_pages: 1,
+        total_results: uniqueMovies.length,
+    };
+}
+
 export { tmdbApi };
+

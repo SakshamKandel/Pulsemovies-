@@ -7,6 +7,7 @@ import { getImageUrl, formatRuntime, formatYear, formatCurrency } from '@/lib/ut
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { MovieCarousel } from '@/components/movie/MovieCarousel';
+import { HeroBackdrop } from '@/components/movie/HeroBackdrop';
 import { AddToListButton } from '@/components/ui/AddToListButton';
 import type { Metadata } from 'next';
 
@@ -55,18 +56,12 @@ export default async function MovieDetailPage({ params }: Props) {
 
     return (
         <div className="min-h-screen">
-            {/* Hero Backdrop */}
-            <div className="relative h-[70vh] min-h-[500px]">
-                <Image
-                    src={backdropUrl}
-                    alt={movie.title}
-                    fill
-                    priority
-                    className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
-            </div>
+            {/* Hero Backdrop with Trailer Video */}
+            <HeroBackdrop
+                backdropUrl={backdropUrl}
+                trailerKey={trailer?.key || null}
+                title={movie.title}
+            />
 
             {/* Content */}
             <div className="container mx-auto px-4 md:px-8 -mt-64 relative z-10">

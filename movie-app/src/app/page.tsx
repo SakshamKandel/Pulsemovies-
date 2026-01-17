@@ -5,6 +5,9 @@ import { MoodPicker } from '@/components/home/MoodPicker';
 import { MovieCarousel } from '@/components/movie/MovieCarousel';
 import { PlatformCarousel } from '@/components/home/PlatformCarousel';
 import { UserSections } from '@/components/home/UserSections';
+import { AwardsSection } from '@/components/home/AwardsSection';
+import { AnniversarySection } from '@/components/home/AnniversarySection';
+import { BecauseYouWatched } from '@/components/home/BecauseYouWatched';
 import { PLATFORMS } from '@/config/platforms';
 import {
   getTrendingMovies,
@@ -87,6 +90,15 @@ export default async function HomePage() {
 
           {/* User Sections - Continue Watching & My List (client-side with cache) */}
           <UserSections />
+
+          {/* Personalized Recommendations - Based on Watch History */}
+          <BecauseYouWatched />
+
+          {/* Awards & Oscar Winners */}
+          <AwardsSection />
+
+          {/* Released Today in History */}
+          <AnniversarySection />
 
           {/* Trending */}
           <section className="container mx-auto px-4 md:px-8">
