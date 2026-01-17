@@ -54,20 +54,34 @@ export function PlatformCarousel({ platform, platformKey, items, className }: Pl
         }
     };
 
-    // Drag handlers
+    // Track if user is actually dragging (moved more than a threshold)
+    const hasDragged = React.useRef(false);
+    const dragThreshold = 10;
+
+    // Mouse drag handlers (desktop only)
     const handleMouseDown = (e: React.MouseEvent) => {
         if (!scrollRef.current) return;
         setIsDragging(true);
+        hasDragged.current = false;
         setStartX(e.pageX - scrollRef.current.offsetLeft);
         setScrollLeft(scrollRef.current.scrollLeft);
     };
 
-    const handleMouseUp = () => setIsDragging(false);
+    const handleMouseUp = () => {
+        setIsDragging(false);
+        // Reset hasDragged after a short delay to allow click to process
+        setTimeout(() => { hasDragged.current = false; }, 100);
+    };
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!isDragging || !scrollRef.current) return;
         e.preventDefault();
-        scrollRef.current.scrollLeft = scrollLeft - (e.pageX - scrollRef.current.offsetLeft - startX) * 2;
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        if (Math.abs(walk) > dragThreshold) {
+            hasDragged.current = true;
+        }
+        scrollRef.current.scrollLeft = scrollLeft - walk;
     };
 
     if (!items || items.length === 0 || !platform) return null;
@@ -155,7 +169,7 @@ export function PlatformCarousel({ platform, platformKey, items, className }: Pl
                         onMouseLeave={handleMouseUp}
                         onMouseMove={handleMouseMove}
                         className={cn(
-                            'flex gap-3 overflow-x-auto hide-scrollbar',
+                            'flex gap-3 overflow-x-auto hide-scrollbar touch-pan-x',
                             isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'
                         )}
                         style={{ scrollBehavior: isDragging ? 'auto' : 'smooth' }}
@@ -164,7 +178,6 @@ export function PlatformCarousel({ platform, platformKey, items, className }: Pl
                             <div
                                 key={item.id}
                                 className="flex-shrink-0"
-                                style={{ pointerEvents: isDragging ? 'none' : 'auto' }}
                             >
                                 <MovieCard item={item} index={index} />
                             </div>
