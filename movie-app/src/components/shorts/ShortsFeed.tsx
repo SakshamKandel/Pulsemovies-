@@ -328,9 +328,9 @@ function ShortsPlayer({
                     <div className="relative">
                         <button
                             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                            className="p-3 bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
+                            className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
                         >
-                            <Settings className={cn("w-6 h-6 transition-transform", isSettingsOpen ? "rotate-90" : "")} />
+                            <Settings className={cn("w-5 h-5 transition-transform", isSettingsOpen ? "rotate-90" : "")} />
                         </button>
 
                         <AnimatePresence>
@@ -371,9 +371,9 @@ function ShortsPlayer({
 
                     <button
                         onClick={toggleMute}
-                        className="p-3 bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
+                        className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
                     >
-                        {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                     </button>
                 </div>
             </div>
