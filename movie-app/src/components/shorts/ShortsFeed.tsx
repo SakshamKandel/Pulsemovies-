@@ -358,7 +358,13 @@ function ShortsPlayer({
                         {/* Mute Toggle Layer */}
                         <div
                             className="absolute inset-0 z-20 cursor-pointer"
-                            onClick={(e) => { e.stopPropagation(); toggleMute(); }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (!isPlaying) {
+                                    sendCommand('playVideo');
+                                }
+                                toggleMute();
+                            }}
                         />
                     </div>
                 ) : (
