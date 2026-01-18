@@ -241,8 +241,12 @@ function ShortsPlayer({
             if (iframeRef.current && event.source === iframeRef.current.contentWindow) {
                 try {
                     const data = JSON.parse(event.data);
-                    // YouTube API: info.playerState. 1 = Playing, 3 = Buffering
-                    if (data.event === 'infoDelivery' && data.info && data.info.playerState === 1) {
+                    // Support both event types for robustness
+                    const isPlayingState =
+                        (data.event === 'infoDelivery' && data.info && data.info.playerState === 1) ||
+                        (data.event === 'onStateChange' && data.info === 1);
+
+                    if (isPlayingState) {
                         setIsPlaying(true);
                     }
                 } catch (e) {
@@ -322,12 +326,16 @@ function ShortsPlayer({
                         {/* Video Frame */}
                         <iframe
                             ref={iframeRef}
+                            suppressHydrationWarning
                             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[150%] md:w-[150%] md:h-[150%] object-cover pointer-events-none contrast-[1.08] saturate-[1.08]"
                             // enablejsapi=1 is crucial. autoplay=0 because we control it via JS. origin needed for message passing.
                             src={`https://www.youtube.com/embed/${movie.video_key}?enablejsapi=1&origin=${origin}&autoplay=0&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1${getQualityParam()}`}
                             allow="autoplay; encrypted-media"
                             title={movie.title}
                             loading="eager"
+                            onLoad={() => {
+                                if (isActive) sendCommand('playVideo');
+                            }}
                         />
 
                         {/* Seamless Poster Overlay: Hides loading spinner/branding until playing */}
