@@ -212,6 +212,7 @@ function ShortsPlayer({
     const { videoQuality, setVideoQuality } = usePreferencesStore();
     const [inWatchlist, setInWatchlist] = React.useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+    const [isPlaying, setIsPlaying] = React.useState(false);
     const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
     React.useEffect(() => {
@@ -232,13 +233,39 @@ function ShortsPlayer({
         }
     }, []);
 
-    // Playback Control
+    // Listen for Player State Changes (to hide poster only when playing)
     React.useEffect(() => {
         if (!shouldLoad) return;
+
+        const handleMessage = (event: MessageEvent) => {
+            if (iframeRef.current && event.source === iframeRef.current.contentWindow) {
+                try {
+                    const data = JSON.parse(event.data);
+                    // YouTube API: info.playerState. 1 = Playing, 3 = Buffering
+                    if (data.event === 'infoDelivery' && data.info && data.info.playerState === 1) {
+                        setIsPlaying(true);
+                    }
+                } catch (e) {
+                    // Ignore non-JSON messages
+                }
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [shouldLoad]);
+
+    // Playback Control
+    React.useEffect(() => {
+        if (!shouldLoad) {
+            setIsPlaying(false);
+            return;
+        }
         if (isActive) {
             sendCommand('playVideo');
         } else {
             sendCommand('pauseVideo');
+            setIsPlaying(false); // Show poster when paused/inactive (optional, keeps UI clean)
         }
     }, [isActive, shouldLoad, sendCommand]);
 
@@ -272,6 +299,9 @@ function ShortsPlayer({
         }
     };
 
+    // Origin for API security
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
     return (
         <div className="relative w-full h-full bg-black overflow-hidden group">
             {/* Background / Video Layer */}
@@ -289,31 +319,37 @@ function ShortsPlayer({
                     </div>
                 ) : shouldLoad && movie.video_key ? (
                     <div className="absolute inset-0 w-full h-full">
-                        {/* Static Backdrop Blur while loading (fades out when video plays ideally, here kept as underlay) */}
-                        <Image
-                            src={getImageUrl(movie.poster_path, 'original', 'poster')}
-                            alt={movie.title}
-                            fill
-                            className="object-cover blur-3xl opacity-50"
-                            priority
-                        />
-
-                        <div className="absolute inset-0 bg-black/20" />
-
                         {/* Video Frame */}
                         <iframe
                             ref={iframeRef}
                             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[150%] md:w-[150%] md:h-[150%] object-cover pointer-events-none contrast-[1.08] saturate-[1.08]"
-                            // enablejsapi=1 is crucial. autoplay=0 because we control it via JS.
-                            src={`https://www.youtube.com/embed/${movie.video_key}?enablejsapi=1&autoplay=0&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1${getQualityParam()}`}
+                            // enablejsapi=1 is crucial. autoplay=0 because we control it via JS. origin needed for message passing.
+                            src={`https://www.youtube.com/embed/${movie.video_key}?enablejsapi=1&origin=${origin}&autoplay=0&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1${getQualityParam()}`}
                             allow="autoplay; encrypted-media"
                             title={movie.title}
-                            loading="eager" // Always eager since we control DOM presence via shouldLoad
+                            loading="eager"
                         />
+
+                        {/* Seamless Poster Overlay: Hides loading spinner/branding until playing */}
+                        <div
+                            className={cn(
+                                "absolute inset-0 z-10 transition-opacity duration-700 ease-in-out bg-black",
+                                isPlaying ? "opacity-0 pointer-events-none" : "opacity-100"
+                            )}
+                        >
+                            <Image
+                                src={getImageUrl(movie.poster_path, 'original', 'poster')}
+                                alt={movie.title}
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                            <div className="absolute inset-0 bg-black/20" />
+                        </div>
 
                         {/* Mute Toggle Layer */}
                         <div
-                            className="absolute inset-0 z-10 cursor-pointer"
+                            className="absolute inset-0 z-20 cursor-pointer"
                             onClick={(e) => { e.stopPropagation(); toggleMute(); }}
                         />
                     </div>
