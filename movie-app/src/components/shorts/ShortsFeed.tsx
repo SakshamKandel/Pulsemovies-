@@ -248,7 +248,7 @@ function ShortsPlayer({
                         {/* Video Frame */}
                         <iframe
                             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[150%] md:w-[150%] md:h-[150%] object-cover pointer-events-none"
-                            src={`https://www.youtube.com/embed/${movie.video_key}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`}
+                            src={`https://www.youtube.com/embed/${movie.video_key}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1${!isLowBandwidth ? '&vq=hd1080' : ''}`}
                             allow="autoplay; encrypted-media"
                             title={movie.title}
                             loading={isLowBandwidth ? 'lazy' : 'eager'}

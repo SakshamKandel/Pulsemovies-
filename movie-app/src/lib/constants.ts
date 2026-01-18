@@ -4,30 +4,30 @@ export const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 export const TMDB_BASE_URL = process.env.NEXT_PUBLIC_TMDB_BASE_URL || 'https://api.themoviedb.org/3';
 export const TMDB_IMAGE_BASE_URL = process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p';
 
-// Image Sizes
+// Image Sizes - Using higher resolutions for better quality
 export const IMAGE_SIZES = {
     poster: {
-        small: 'w185',
-        medium: 'w342',
-        large: 'w500',
+        small: 'w342',      // Upgraded from w185
+        medium: 'w500',     // Upgraded from w342
+        large: 'w780',      // Upgraded from w500
         original: 'original',
     },
     backdrop: {
-        small: 'w300',
-        medium: 'w780',
-        large: 'w1280',
+        small: 'w780',      // Upgraded from w300
+        medium: 'w1280',    // Upgraded from w780
+        large: 'original',  // Upgraded from w1280
         original: 'original',
     },
     profile: {
-        small: 'w45',
-        medium: 'w185',
-        large: 'h632',
+        small: 'w185',      // Upgraded from w45
+        medium: 'w342',     // Upgraded from w185
+        large: 'h632',      // Kept same (highest specific)
         original: 'original',
     },
     logo: {
-        small: 'w45',
-        medium: 'w185',
-        large: 'w500',
+        small: 'w154',      // Upgraded from w45
+        medium: 'w300',     // Upgraded from w185
+        large: 'w500',      // Kept same
         original: 'original',
     },
 } as const;
