@@ -5,12 +5,14 @@ export interface UserPreferences {
     favoriteGenres: number[]; // Genre IDs
     hasCompletedOnboarding: boolean;
     prefersDarkMode: boolean;
+    videoQuality: 'auto' | 'hd720' | 'hd1080' | 'highres';
 }
 
 interface PreferencesState extends UserPreferences {
     setFavoriteGenres: (genres: number[]) => void;
     toggleGenre: (genreId: number) => void;
     completeOnboarding: () => void;
+    setVideoQuality: (quality: UserPreferences['videoQuality']) => void;
     resetPreferences: () => void;
 }
 
@@ -18,6 +20,7 @@ const defaultPreferences: UserPreferences = {
     favoriteGenres: [],
     hasCompletedOnboarding: false,
     prefersDarkMode: true,
+    videoQuality: 'auto',
 };
 
 export const usePreferencesStore = create<PreferencesState>()(
@@ -37,6 +40,8 @@ export const usePreferencesStore = create<PreferencesState>()(
             },
 
             completeOnboarding: () => set({ hasCompletedOnboarding: true }),
+
+            setVideoQuality: (quality) => set({ videoQuality: quality }),
 
             resetPreferences: () => set(defaultPreferences),
         }),

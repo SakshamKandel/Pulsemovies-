@@ -2,13 +2,15 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, Play, Info, Volume2, VolumeX, Plus, Check, WifiOff, SignalLow } from 'lucide-react';
+import { ChevronUp, ChevronDown, Play, Info, Volume2, VolumeX, Plus, Check, WifiOff, SignalLow, Settings } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getImageUrl, cn, formatYear } from '@/lib/utils';
 import type { Movie } from '@/types/movie';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
+import { useWatchlistStore } from '@/store/useWatchlistStore';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { usePreferencesStore } from '@/store/usePreferencesStore';
 
 interface ShortsFeedProps {
     initialMovies: Movie[];
@@ -202,7 +204,9 @@ function ShortsPlayer({
     movie: Movie, isActive: boolean, isMuted: boolean, toggleMute: () => void, isOnline: boolean, connectionQuality: string
 }) {
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
+    const { videoQuality, setVideoQuality } = usePreferencesStore();
     const [inWatchlist, setInWatchlist] = React.useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
     React.useEffect(() => {
         setInWatchlist(isInWatchlist(movie.id));
@@ -216,6 +220,17 @@ function ShortsPlayer({
 
     // Low bandwidth check (2g or 3g)
     const isLowBandwidth = connectionQuality === '2g' || connectionQuality === '3g';
+
+    // Get quality parameter based on preference or bandwidth
+    const getQualityParam = () => {
+        if (isLowBandwidth) return ''; // Let YouTube decide on slow connections
+        switch (videoQuality) {
+            case 'hd1080': return '&vq=hd1080';
+            case 'hd720': return '&vq=hd720';
+            case 'highres': return '&vq=highres'; // 4K/Original
+            case 'auto': default: return '';
+        }
+    };
 
     return (
         <div className="relative w-full h-full bg-black overflow-hidden group">
@@ -248,7 +263,7 @@ function ShortsPlayer({
                         {/* Video Frame */}
                         <iframe
                             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[150%] md:w-[150%] md:h-[150%] object-cover pointer-events-none"
-                            src={`https://www.youtube.com/embed/${movie.video_key}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1${!isLowBandwidth ? '&vq=hd1080' : ''}`}
+                            src={`https://www.youtube.com/embed/${movie.video_key}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1${getQualityParam()}`}
                             allow="autoplay; encrypted-media"
                             title={movie.title}
                             loading={isLowBandwidth ? 'lazy' : 'eager'}
@@ -308,7 +323,52 @@ function ShortsPlayer({
                     )}
                 </div>
 
-                <div className="pointer-events-auto">
+                <div className="pointer-events-auto flex items-center gap-4">
+                    {/* Settings / Quality Menu */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                            className="p-3 bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
+                        >
+                            <Settings className={cn("w-6 h-6 transition-transform", isSettingsOpen ? "rotate-90" : "")} />
+                        </button>
+
+                        <AnimatePresence>
+                            {isSettingsOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                    className="absolute top-14 right-0 w-32 bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 flex flex-col p-1"
+                                >
+                                    {[
+                                        { label: 'Auto', value: 'auto' },
+                                        { label: '720p', value: 'hd720' },
+                                        { label: '1080p', value: 'hd1080' },
+                                        { label: '4K', value: 'highres' },
+                                    ].map((option) => (
+                                        <button
+                                            key={option.value}
+                                            onClick={() => {
+                                                setVideoQuality(option.value as any);
+                                                setIsSettingsOpen(false);
+                                            }}
+                                            className={cn(
+                                                "px-4 py-2 text-sm font-medium text-left rounded-lg transition-colors flex items-center justify-between",
+                                                videoQuality === option.value
+                                                    ? "bg-white text-black"
+                                                    : "text-white/80 hover:bg-white/10"
+                                            )}
+                                        >
+                                            {option.label}
+                                            {videoQuality === option.value && <Check className="w-3.5 h-3.5" />}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
                     <button
                         onClick={toggleMute}
                         className="p-3 bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
