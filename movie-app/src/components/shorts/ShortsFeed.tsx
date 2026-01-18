@@ -340,6 +340,29 @@ function ShortsPlayer({
 
 
 
+
+                        {/* Seamless Poster Overlay: Hides loading spinner/branding and YouTube logo */}
+                        <div
+                            className={cn(
+                                "absolute inset-0 z-10 flex items-center justify-center transition-opacity duration-700 ease-in-out bg-black",
+                                isPlaying ? "opacity-0 pointer-events-none" : "opacity-100"
+                            )}
+                        >
+                            <Image
+                                src={getImageUrl(movie.poster_path, 'original', 'poster')}
+                                alt={movie.title}
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                            <div className="absolute inset-0 bg-black/20" />
+
+                            {/* Visual Play Button Indicator */}
+                            <div className="relative z-20 w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-xl animate-pulse">
+                                <Play className="w-8 h-8 fill-white text-white ml-1" />
+                            </div>
+                        </div>
+
                         {/* Mute Toggle Layer */}
                         <div
                             className="absolute inset-0 z-20 cursor-pointer"
