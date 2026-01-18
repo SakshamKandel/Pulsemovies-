@@ -338,22 +338,7 @@ function ShortsPlayer({
                             }}
                         />
 
-                        {/* Seamless Poster Overlay: Hides loading spinner/branding until playing */}
-                        <div
-                            className={cn(
-                                "absolute inset-0 z-10 transition-opacity duration-700 ease-in-out bg-black",
-                                isPlaying ? "opacity-0 pointer-events-none" : "opacity-100"
-                            )}
-                        >
-                            <Image
-                                src={getImageUrl(movie.poster_path, 'original', 'poster')}
-                                alt={movie.title}
-                                fill
-                                className="object-cover"
-                                priority
-                            />
-                            <div className="absolute inset-0 bg-black/20" />
-                        </div>
+
 
                         {/* Mute Toggle Layer */}
                         <div
