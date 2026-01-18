@@ -9,11 +9,11 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
 
-interface ShortsFeedProps {
+interface PulsesFeedProps {
     initialMovies: Movie[];
 }
 
-export default function ShortsFeed({ initialMovies }: ShortsFeedProps) {
+export default function PulsesFeed({ initialMovies }: PulsesFeedProps) {
     const [movies, setMovies] = useState<Movie[]>(initialMovies);
     const [activeIndex, setActiveIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -60,7 +60,7 @@ export default function ShortsFeed({ initialMovies }: ShortsFeedProps) {
                     key={`${movie.id}-${index}`}
                     className="h-full w-full snap-start relative flex items-center justify-center bg-black"
                 >
-                    <ShortsPlayer
+                    <PulsesPlayer
                         movie={movie}
                         isActive={index === activeIndex}
                         shouldLoad={Math.abs(index - activeIndex) <= 1} // Only load current and adjacent
@@ -73,7 +73,7 @@ export default function ShortsFeed({ initialMovies }: ShortsFeedProps) {
     );
 }
 
-interface ShortsPlayerProps {
+interface PulsesPlayerProps {
     movie: Movie;
     isActive: boolean;
     shouldLoad: boolean;
@@ -81,7 +81,7 @@ interface ShortsPlayerProps {
     toggleMute: () => void;
 }
 
-function ShortsPlayer({ movie, isActive, shouldLoad, isMuted, toggleMute }: ShortsPlayerProps) {
+function PulsesPlayer({ movie, isActive, shouldLoad, isMuted, toggleMute }: PulsesPlayerProps) {
     const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useWatchlistStore();
     const inWatchlist = isInWatchlist(movie.id);
 

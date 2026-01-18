@@ -1,4 +1,4 @@
-import { ShortsFeed } from '@/components/shorts/ShortsFeed';
+import PulsesFeed from '@/components/pulses/PulsesFeed';
 import { getPopularMovies, getMoviesWithVideos, getTopRatedMovies, getTrendingMovies } from '@/lib/tmdb';
 
 // Force dynamic to ensures random seed on reload
@@ -13,7 +13,7 @@ function shuffleArray<T>(array: T[]): T[] {
     return newArray;
 }
 
-export default async function ShortsPage() {
+export default async function PulsesPage() {
     const [trending, topRated, popular] = await Promise.all([
         getTrendingMovies(1),
         getTopRatedMovies(1),
@@ -35,7 +35,7 @@ export default async function ShortsPage() {
 
     return (
         <div className="bg-black min-h-screen">
-            <ShortsFeed initialMovies={withVideos} />
+            <PulsesFeed initialMovies={withVideos} />
         </div>
     );
 }
