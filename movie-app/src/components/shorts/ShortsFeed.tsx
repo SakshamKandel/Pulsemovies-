@@ -176,41 +176,81 @@ export function ShortsFeed({ initialMovies }: ShortsFeedProps) {
             </div>
 
             {
-                movies.map((movie, index) => (
-                    <div
-                        // Add index to key to allow duplicate movies in the infinite list
-                        key={`${movie.id}-${index}`}
-                        className="relative h-[100dvh] w-full snap-start flex items-center justify-center overflow-hidden bg-zinc-950"
-                        style={{ height: '100dvh' }}
-                    >
-                        <ShortsPlayer
-                            movie={movie}
-                            isActive={index === activeIndex}
-                            isMuted={isMuted}
-                            toggleMute={() => setIsMuted(!isMuted)}
-                            isOnline={isOnline}
-                            connectionQuality={effectiveType}
-                        />
-                    </div>
-                ))
+                movies.map((movie, index) => {
+                    // Load strategy: Keep 1 previous, current, and 3 upcoming videos loaded
+                    const shouldLoad = index >= activeIndex - 1 && index <= activeIndex + 3;
+                    return (
+                        <div
+                            // Add index to key to allow duplicate movies in the infinite list
+                            key={`${movie.id}-${index}`}
+                            className="relative h-[100dvh] w-full snap-start flex items-center justify-center overflow-hidden bg-zinc-950"
+                            style={{ height: '100dvh' }}
+                        >
+                            <ShortsPlayer
+                                movie={movie}
+                                isActive={index === activeIndex}
+                                shouldLoad={shouldLoad}
+                                isMuted={isMuted}
+                                toggleMute={() => setIsMuted(!isMuted)}
+                                isOnline={isOnline}
+                                connectionQuality={effectiveType}
+                            />
+                        </div>
+                    );
+                })
             }
         </div >
     );
 }
 
 function ShortsPlayer({
-    movie, isActive, isMuted, toggleMute, isOnline, connectionQuality
+    movie, isActive, shouldLoad, isMuted, toggleMute, isOnline, connectionQuality
 }: {
-    movie: Movie, isActive: boolean, isMuted: boolean, toggleMute: () => void, isOnline: boolean, connectionQuality: string
+    movie: Movie, isActive: boolean, shouldLoad: boolean, isMuted: boolean, toggleMute: () => void, isOnline: boolean, connectionQuality: string
 }) {
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
     const { videoQuality, setVideoQuality } = usePreferencesStore();
     const [inWatchlist, setInWatchlist] = React.useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+    const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
     React.useEffect(() => {
         setInWatchlist(isInWatchlist(movie.id));
     }, [isInWatchlist, movie.id]);
+
+    // YouTube API Control
+    const sendCommand = React.useCallback((command: string, args: any = null) => {
+        if (iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.postMessage(
+                JSON.stringify({
+                    event: 'command',
+                    func: command,
+                    args: args || []
+                }),
+                '*'
+            );
+        }
+    }, []);
+
+    // Playback Control
+    React.useEffect(() => {
+        if (!shouldLoad) return;
+        if (isActive) {
+            sendCommand('playVideo');
+        } else {
+            sendCommand('pauseVideo');
+        }
+    }, [isActive, shouldLoad, sendCommand]);
+
+    // Mute Control
+    React.useEffect(() => {
+        if (!shouldLoad) return;
+        if (isMuted) {
+            sendCommand('mute');
+        } else {
+            sendCommand('unMute');
+        }
+    }, [isMuted, shouldLoad, sendCommand]);
 
     const handleWatchlist = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -247,9 +287,9 @@ function ShortsPlayer({
                             className="object-cover opacity-20 -z-10"
                         />
                     </div>
-                ) : isActive && movie.video_key ? (
+                ) : shouldLoad && movie.video_key ? (
                     <div className="absolute inset-0 w-full h-full">
-                        {/* Static Backdrop Blur while loading */}
+                        {/* Static Backdrop Blur while loading (fades out when video plays ideally, here kept as underlay) */}
                         <Image
                             src={getImageUrl(movie.poster_path, 'original', 'poster')}
                             alt={movie.title}
@@ -262,11 +302,13 @@ function ShortsPlayer({
 
                         {/* Video Frame */}
                         <iframe
-                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[150%] md:w-[150%] md:h-[150%] object-cover pointer-events-none"
-                            src={`https://www.youtube.com/embed/${movie.video_key}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1${getQualityParam()}`}
+                            ref={iframeRef}
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[150%] md:w-[150%] md:h-[150%] object-cover pointer-events-none contrast-[1.08] saturate-[1.08]"
+                            // enablejsapi=1 is crucial. autoplay=0 because we control it via JS.
+                            src={`https://www.youtube.com/embed/${movie.video_key}?enablejsapi=1&autoplay=0&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1${getQualityParam()}`}
                             allow="autoplay; encrypted-media"
                             title={movie.title}
-                            loading={isLowBandwidth ? 'lazy' : 'eager'}
+                            loading="eager" // Always eager since we control DOM presence via shouldLoad
                         />
 
                         {/* Mute Toggle Layer */}
@@ -276,7 +318,7 @@ function ShortsPlayer({
                         />
                     </div>
                 ) : (
-                    /* Fallback Image */
+                    /* Fallback / Placeholder Image when not loaded */
                     <div className="absolute inset-0">
                         <Image
                             src={getImageUrl(movie.poster_path, 'original', 'poster')}
@@ -328,7 +370,7 @@ function ShortsPlayer({
                     <div className="relative">
                         <button
                             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                            className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
+                            className="w-10 h-10 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
                         >
                             <Settings className={cn("w-5 h-5 transition-transform", isSettingsOpen ? "rotate-90" : "")} />
                         </button>
@@ -371,7 +413,7 @@ function ShortsPlayer({
 
                     <button
                         onClick={toggleMute}
-                        className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
+                        className="w-10 h-10 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-full text-white/90 border border-white/10 hover:bg-white/20 transition-colors"
                     >
                         {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                     </button>
