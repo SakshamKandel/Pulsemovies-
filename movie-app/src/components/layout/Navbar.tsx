@@ -63,7 +63,7 @@ export function Navbar() {
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center gap-8 mt-2">
+                    <div className="hidden md:flex items-center gap-8">
                         {NAV_ITEMS.map((item) => (
                             <Link
                                 key={item.href}

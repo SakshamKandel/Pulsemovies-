@@ -47,14 +47,14 @@ export default async function SeriesPage({ searchParams }: PageProps) {
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">{pageTitle}</h1>
 
                 {/* Sort Options */}
-                <div className="flex flex-wrap gap-3 mb-8">
+                <div className="flex flex-wrap gap-3 mb-8 items-center">
                     {sortOptions.map((option) => (
                         <Link
                             key={option.key}
                             href={`/browse/series?sort=${option.key}`}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${sort === option.key
-                                    ? 'bg-accent-primary text-white'
-                                    : 'bg-background-card text-text-secondary hover:bg-accent-primary/20 hover:text-white'
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center justify-center ${sort === option.key
+                                ? 'bg-accent-primary text-white'
+                                : 'bg-background-card text-text-secondary hover:bg-accent-primary/20 hover:text-white'
                                 }`}
                         >
                             {option.label}
@@ -63,12 +63,12 @@ export default async function SeriesPage({ searchParams }: PageProps) {
                 </div>
 
                 {/* Genre Pills */}
-                <div className="flex flex-wrap gap-2 mb-10">
+                <div className="flex flex-wrap gap-2 mb-10 items-center">
                     {Object.entries(TV_GENRES).slice(0, 12).map(([id, name]) => (
                         <Link
                             key={id}
                             href={`/browse/series?genre=${id}`}
-                            className="px-3 py-1.5 bg-white/5 text-text-muted rounded-full text-xs font-medium hover:bg-accent-primary/20 hover:text-white transition-colors"
+                            className="px-4 py-2 bg-white/5 text-text-muted rounded-full text-sm font-medium hover:bg-accent-primary/20 hover:text-white transition-colors flex items-center justify-center"
                         >
                             {name}
                         </Link>

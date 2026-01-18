@@ -74,12 +74,12 @@ export default async function MoviesPage({ searchParams }: PageProps) {
                 {/* Filters Container */}
                 <div className="flex flex-col gap-6 mb-10">
                     {/* Genre Pills */}
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 items-center">
                         {Object.entries(MOVIE_GENRES).slice(0, 14).map(([id, name]) => (
                             <Link
                                 key={id}
                                 href={`/browse/movies?genre=${id}`}
-                                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${genre === id
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border flex items-center justify-center ${genre === id
                                     ? 'bg-accent-primary border-accent-primary text-white'
                                     : 'bg-white/5 border-white/10 text-text-muted hover:bg-accent-primary/20 hover:text-white hover:border-accent-primary/50'
                                     }`}
@@ -89,7 +89,7 @@ export default async function MoviesPage({ searchParams }: PageProps) {
                         ))}
                         <Link
                             href="/browse/movies"
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${!genre
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border flex items-center justify-center ${!genre
                                 ? 'bg-white/10 border-white/20 text-white'
                                 : 'bg-transparent border-transparent text-text-muted hover:text-white'
                                 }`}
@@ -100,12 +100,12 @@ export default async function MoviesPage({ searchParams }: PageProps) {
 
                     {/* Sort Options (Only show if no genre is selected, or let them coexist if we implemented advanced filtering) */}
                     {!genre && (
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-3 items-center">
                             {sortOptions.map((option) => (
                                 <Link
                                     key={option.key}
                                     href={`/browse/movies?sort=${option.key}`}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${sort === option.key || (!sort && option.key === 'popular')
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center justify-center ${sort === option.key || (!sort && option.key === 'popular')
                                         ? 'bg-white text-black'
                                         : 'bg-background-card text-text-secondary hover:bg-white/10 hover:text-white'
                                         }`}
