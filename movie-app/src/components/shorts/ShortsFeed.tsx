@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { getImageUrl, cn, formatYear } from '@/lib/utils';
 import type { Movie } from '@/types/movie';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
-import { useWatchlistStore } from '@/store/useWatchlistStore';
+
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { usePreferencesStore } from '@/store/usePreferencesStore';
 
