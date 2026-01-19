@@ -54,7 +54,7 @@ interface PlayerEmbedProps {
     episode?: number;
     className?: string;
     movieTitle?: string;
-    posterPath?: string;
+    posterPath?: string | null;
     description?: string; // Short description to display
 }
 

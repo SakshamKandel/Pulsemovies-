@@ -101,7 +101,7 @@ export default async function WatchTVPage({ params, searchParams }: Props) {
                                 className="h-full"
                                 description={currentEpisode?.overview || show.overview}
                                 movieTitle={show.name}
-                                posterPath={show.poster_path}
+                                posterPath={show.poster_path || undefined}
                             />
                         </div>
 
