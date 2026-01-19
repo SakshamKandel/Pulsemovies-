@@ -59,16 +59,19 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized profile access' }, { status: 403 });
         }
 
-        const item = await prisma.watchHistory.upsert({
+        const historyItem = await prisma.watchHistory.upsert({
             where: {
                 profileId_tmdbId: {
-                    profileId,
-                    tmdbId,
+                    profileId: profileId,
+                    tmdbId: tmdbId,
                 },
             },
             update: {
                 progress,
                 timestamp: new Date(),
+                title,       // Update details in case they changed
+                posterPath,
+                mediaType
             },
             create: {
                 profileId,
@@ -80,53 +83,8 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        return NextResponse.json(item);
+        return NextResponse.json(historyItem);
     } catch (error) {
         return NextResponse.json({ error: 'Failed to update history' }, { status: 500 });
-    }
-}
-
-export async function DELETE(request: NextRequest) {
-    try {
-        const session = await auth();
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const { searchParams } = new URL(request.url);
-        const tmdbId = searchParams.get('tmdbId');
-        const profileId = searchParams.get('profileId');
-
-        if (!profileId) {
-            return NextResponse.json({ error: 'Missing profileId' }, { status: 400 });
-        }
-
-        // Verify profile belongs to user
-        const profile = await prisma.profile.findFirst({
-            where: { id: profileId, userId: session.user.id }
-        });
-
-        if (!profile) {
-            return NextResponse.json({ error: 'Unauthorized profile access' }, { status: 403 });
-        }
-
-        if (tmdbId) {
-            // Delete specific item
-            await prisma.watchHistory.deleteMany({
-                where: {
-                    profileId: profileId,
-                    tmdbId: parseInt(tmdbId),
-                },
-            });
-        } else {
-            // Clear all history
-            await prisma.watchHistory.deleteMany({
-                where: { profileId: profileId },
-            });
-        }
-
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to clear history' }, { status: 500 });
     }
 }
