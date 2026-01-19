@@ -109,32 +109,35 @@ export default function SignupPage() {
                                     minLength={6}
                                     className="w-full bg-transparent border-b border-gray-800 py-3 pl-8 pr-8 text-white placeholder:text-gray-600 focus:outline-none focus:border-white transition-colors"
                                 />
-                                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors p-2"
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors p-2"
                                 >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
                         </div>
                     </div>
-            </div>
 
-            <div className="pt-4">
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-white/10 text-white hover:bg-white hover:text-black font-bold h-12 rounded transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 hover:border-transparent"
-                >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
-                </button>
-            </div>
-        </form>
+                    <div className="pt-4">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-white/10 text-white hover:bg-white hover:text-black font-bold h-12 rounded transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 hover:border-transparent"
+                        >
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
+                        </button>
+                    </div>
+                </form>
 
-                {/* Footer */ }
-    <p className="text-center text-gray-500 text-sm">
-        Already have an account?{' '}
-        <Link href="/login" className="text-white hover:underline">
-            Sign in
-        </Link>
-    </p>
+                {/* Footer */}
+                <p className="text-center text-gray-500 text-sm">
+                    Already have an account?{' '}
+                    <Link href="/login" className="text-white hover:underline">
+                        Sign in
+                    </Link>
+                </p>
             </div >
         </div >
     );

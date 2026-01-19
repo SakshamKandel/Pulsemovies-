@@ -93,6 +93,8 @@ export default function LoginPage() {
                                     className="w-full bg-transparent border-b border-gray-800 py-3 pl-8 pr-8 text-white placeholder:text-gray-600 focus:outline-none focus:border-white transition-colors"
                                 />
                                 <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors p-2"
                                 >
                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
