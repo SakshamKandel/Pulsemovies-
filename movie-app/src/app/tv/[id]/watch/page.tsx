@@ -92,13 +92,13 @@ export default async function WatchTVPage({ params, searchParams }: Props) {
                     {/* Content Layout */}
                     <div className="max-w-7xl mx-auto">
                         {/* Player Wrapper */}
-                        <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 bg-black mb-8">
+                        <div className="w-full mb-8">
                             <PlayerEmbed
                                 tmdbId={show.id}
                                 type="tv"
                                 season={seasonNumber}
                                 episode={episodeNumber}
-                                className="h-full"
+                                className="w-full"
                                 description={currentEpisode?.overview || show.overview}
                                 movieTitle={show.name}
                                 posterPath={show.poster_path || undefined}
