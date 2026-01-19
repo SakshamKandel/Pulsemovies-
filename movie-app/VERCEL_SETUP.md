@@ -5,28 +5,24 @@ Your application is now ready for full-stack deployment on Vercel. This includes
 ## 1. Prerequisites (Codebase Ready)
 I have updated your `package.json` to include `"postinstall": "prisma generate"`. This ensures Vercel automatically sets up your database client during deployment.
 
-## 2. Setting up the Database on Vercel
-Since you need a backend and database, the easiest way is to use **Vercel Postgres**.
+## 2. Setting up the Database on Neon (Recommended)
+Since you want to use **Neon Database**:
 
-1. Go to your [Vercel Dashboard](https://vercel.com/dashboard).
-2. Select your project (or import it from GitHub if needed).
-3. Navigate to the **Storage** tab.
-4. Click **Create Database** and select **Postgres**.
-5. Accept the terms and give it a name (e.g., `pulse-db`).
-6. Select the region closest to your users (e.g., `Washington, D.C. (iad1)`).
-7. Click **Create**.
+1. Log in to your [Neon Console](https://console.neon.tech).
+2. Create a new project (e.g., `pulse-movies`).
+3. Once created, go to the **Dashboard**.
+4. Look for the **Connection Details** section.
+5. Copy the **Connection String** (it starts with `postgresql://...`).
+   - Use the "Pooled connection" option if available (usually better for serverless apps like Next.js), but the direct one works too.
 
-## 3. Connecting the Database
-Once the database is created:
+## 3. Connecting Neon to Vercel
+1. Go to your Vercel Project Settings > **Environment Variables**.
+2. Add a new variable:
+   - **Name**: `DATABASE_URL`
+   - **Value**: Paste the Neon connection string you copied.
+3. Save.
 
-1. In the database setup screen, click **Connect Project**.
-2. Select your `movie-app` project.
-3. This will automatically add the necessary Environment Variables (`POSTGRES_URL`, `POSTGRES_PRISMA_URL`, etc.) to your project settings.
-   
-   **Important:** You typically need to map these to the variable name used in your code.
-   - Go to **Settings > Environment Variables**.
-   - Check if `DATABASE_URL` is set.
-   - If not, create a new variable named `DATABASE_URL` and copy the value from `POSTGRES_PRISMA_URL` (or `POSTGRES_URL_NON_POOLING` if you face connection limit issues).
+**Note:** You do NOT need to create a database inside Vercel's "Storage" tab if you are using Neon. Just setting the environment variable is enough.
 
 ## 4. Setting up NextAuth (Authentication)
 Your app uses NextAuth for login, so you need to set these variables in Vercel **Settings > Environment Variables**:
