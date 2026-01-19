@@ -1,0 +1,68 @@
+# Vercel Deployment Guide (Full Stack)
+
+Your application is now ready for full-stack deployment on Vercel. This includes the Next.js frontend, the API backend, and the PostgreSQL database.
+
+## 1. Prerequisites (Codebase Ready)
+I have updated your `package.json` to include `"postinstall": "prisma generate"`. This ensures Vercel automatically sets up your database client during deployment.
+
+## 2. Setting up the Database on Vercel
+Since you need a backend and database, the easiest way is to use **Vercel Postgres**.
+
+1. Go to your [Vercel Dashboard](https://vercel.com/dashboard).
+2. Select your project (or import it from GitHub if needed).
+3. Navigate to the **Storage** tab.
+4. Click **Create Database** and select **Postgres**.
+5. Accept the terms and give it a name (e.g., `pulse-db`).
+6. Select the region closest to your users (e.g., `Washington, D.C. (iad1)`).
+7. Click **Create**.
+
+## 3. Connecting the Database
+Once the database is created:
+
+1. In the database setup screen, click **Connect Project**.
+2. Select your `movie-app` project.
+3. This will automatically add the necessary Environment Variables (`POSTGRES_URL`, `POSTGRES_PRISMA_URL`, etc.) to your project settings.
+   
+   **Important:** You typically need to map these to the variable name used in your code.
+   - Go to **Settings > Environment Variables**.
+   - Check if `DATABASE_URL` is set.
+   - If not, create a new variable named `DATABASE_URL` and copy the value from `POSTGRES_PRISMA_URL` (or `POSTGRES_URL_NON_POOLING` if you face connection limit issues).
+
+## 4. Setting up NextAuth (Authentication)
+Your app uses NextAuth for login, so you need to set these variables in Vercel **Settings > Environment Variables**:
+
+| Variable Name | Value |
+|---|---|
+| `NEXTAUTH_URL` | Your deployment URL (e.g., `https://your-project.vercel.app`) - *Wait until you have the URL or use the generated one* |
+| `NEXTAUTH_SECRET` | A long random string. You can generate one by running `openssl rand -base64 32` in terminal or just smashing your keyboard (securely). |
+
+## 5. Deploying
+1. Push your latest code to GitHub:
+   ```bash
+   git add .
+   git commit -m "Prepare for Vercel deployment"
+   git push
+   ```
+2. Vercel will automatically detect the commit and start building.
+3. Watch the **Deployments** tab.
+4. Once "Ready", your app is live!
+
+## 6. Initializing the Database (Schema Push)
+After your first deployment, or if you change the schema, you need to apply the database structure to the live database.
+
+You can do this from your local machine if you have the remote connection string, or more easily via the Vercel CLI (if installed), or just by connecting your local development environment to the Vercel DB temporarily.
+
+**Easiest way:**
+1. Copy the `POSTGRES_PRISMA_URL` from Vercel.
+2. Update your `.env` file locally to use this remote URL temporarily:
+   ```env
+   DATABASE_URL="postgres://..."
+   ```
+3. Run:
+   ```bash
+   npx prisma db push
+   ```
+   This creates the tables in your production database.
+
+**Verify:**
+Your app should now be fully functional with Login, Watchlist, and Profile features working in the cloud!

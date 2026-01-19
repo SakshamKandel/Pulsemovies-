@@ -99,6 +99,7 @@ export default async function WatchTVPage({ params, searchParams }: Props) {
                                 season={seasonNumber}
                                 episode={episodeNumber}
                                 className="h-full"
+                                description={currentEpisode?.overview || show.overview}
                             />
                         </div>
 

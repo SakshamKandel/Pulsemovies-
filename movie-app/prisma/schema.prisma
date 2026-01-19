@@ -1,0 +1,75 @@
+// Prisma schema for Pulse Movies authentication and data sync
+// Using Prisma v5 compatible configuration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  profiles      Profile[]
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  name      String
+  avatar    String?
+  pin       String?
+  language  String   @default("en")
+  autoplay  Boolean  @default(true)
+  gameHandle String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  watchlist     Watchlist[]
+  watchHistory  WatchHistory[]
+
+  @@index([userId])
+}
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  profileId String
+  tmdbId    Int
+  mediaType String   // 'movie' | 'tv'
+  title     String
+  posterPath String?
+  voteAverage Float  @default(0)
+  addedAt   DateTime @default(now())
+  
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@unique([profileId, tmdbId])
+  @@index([profileId])
+}
+
+model WatchHistory {
+  id        String   @id @default(cuid())
+  profileId String
+  tmdbId    Int
+  mediaType String   // 'movie' | 'tv'
+  title     String
+  posterPath String?
+  progress  Float    @default(0)
+  timestamp DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  @@unique([profileId, tmdbId])
+  @@index([profileId])
+}

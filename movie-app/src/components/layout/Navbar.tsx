@@ -11,6 +11,7 @@ import { NAV_ITEMS } from '@/lib/constants';
 import { useUIStore } from '@/store/useUIStore';
 import { Button } from '@/components/ui/Button';
 import { SearchBar } from '@/components/search/SearchBar';
+import { UserMenu } from '@/components/auth/UserMenu';
 
 export function Navbar() {
     const pathname = usePathname();
@@ -85,11 +86,16 @@ export function Navbar() {
                         {/* Search Button */}
                         <button
                             onClick={() => setSearchOpen(!isSearchOpen)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-background-card border border-border text-text-secondary hover:text-white hover:border-accent-primary/50 transition-colors"
+                            className="flex items-center gap-2 h-9 px-4 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all group"
                         >
-                            <Search className="w-4 h-4" />
-                            <span className="hidden sm:inline text-sm">Search</span>
+                            <Search className="w-4 h-4 group-hover:text-accent-primary transition-colors" />
+                            <span className="hidden sm:inline text-sm font-medium">Search</span>
                         </button>
+
+                        {/* User Menu */}
+                        <div className="hidden md:block">
+                            <UserMenu />
+                        </div>
 
                         {/* Mobile Menu Button */}
                         <button

@@ -10,6 +10,7 @@ import { AnniversarySection } from '@/components/home/AnniversarySection';
 import { BecauseYouWatched } from '@/components/home/BecauseYouWatched';
 import { ForYouSection } from '@/components/home/ForYouSection';
 import { HindiMoviesSection } from '@/components/home/HindiMoviesSection';
+import { ProfileGreeting } from '@/components/home/ProfileGreeting';
 import { PLATFORMS } from '@/config/platforms';
 import {
   getTrendingMovies,
@@ -80,6 +81,9 @@ export default async function HomePage() {
       <RouletteModal allMovies={roulettePool} />
 
       <HeroBanner movies={heroMovies} />
+
+      {/* Profile Greeting */}
+      <ProfileGreeting />
 
       <DiscoveryBar />
 

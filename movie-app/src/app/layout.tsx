@@ -43,6 +43,7 @@ export const metadata: Metadata = {
 };
 
 import { Footer } from "@/components/layout/Footer";
+import ProfileGate from "@/components/profiles/ProfileGate";
 
 // ... (existing imports)
 
@@ -53,13 +54,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="bg-background text-text-primary antialiased">
+      <body className="bg-background text-text-primary antialiased" suppressHydrationWarning>
         <Providers>
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          <ProfileGate>
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </ProfileGate>
         </Providers>
       </body>
     </html>

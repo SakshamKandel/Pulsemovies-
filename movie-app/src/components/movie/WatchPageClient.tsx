@@ -63,6 +63,7 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
                                     type="movie"
                                     movieTitle={movie.title}
                                     posterPath={movie.poster_path || undefined}
+                                    description={movie.overview}
                                 />
                             </div>
                         </div>

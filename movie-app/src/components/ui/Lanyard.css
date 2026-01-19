@@ -1,0 +1,202 @@
+.lanyard-wrapper {
+    position: relative;
+    z-index: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 0;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Fade effect from top - aesthetic gradient */
+.lanyard-fade-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(180deg,
+            rgba(0, 0, 0, 0.9) 0%,
+            rgba(0, 0, 0, 0.6) 40%,
+            rgba(0, 0, 0, 0) 100%);
+    z-index: 10;
+    pointer-events: none;
+}
+
+.cards-container {
+    display: flex;
+    gap: 0;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    flex-wrap: nowrap;
+}
+
+/* Card wrapper - the entire image including lanyard swings together */
+.id-card-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform-origin: top center;
+    will-change: transform;
+    touch-action: none;
+    flex-shrink: 0;
+    /* Margins are now set dynamically via inline styles based on profile count */
+}
+
+/* Give each card a different z-index - center cards higher */
+.id-card-wrapper:nth-child(1) {
+    z-index: 1;
+}
+
+.id-card-wrapper:nth-child(2) {
+    z-index: 2;
+}
+
+.id-card-wrapper:nth-child(3) {
+    z-index: 3;
+}
+
+.id-card-wrapper:nth-child(4) {
+    z-index: 4;
+}
+
+/* Hover/active state brings card to front */
+.id-card-wrapper:hover,
+.id-card-wrapper:active {
+    z-index: 20 !important;
+}
+
+.id-card-wrapper:first-child {
+    margin-left: 0;
+}
+
+.id-card-wrapper:last-child {
+    margin-right: 0;
+}
+
+.id-card-image {
+    position: relative;
+    z-index: 1;
+    /* Enable pointer events on the card image - this allows hover to work on parent wrapper */
+    pointer-events: auto;
+}
+
+/* Content positioned INSIDE the white card area */
+.id-card-content {
+    position: absolute;
+    top: 58%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 30%;
+    pointer-events: none;
+}
+
+/* Avatar circle - smaller to fit inside card */
+.id-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #1a1a1a 0%, #333 100%);
+    border: 2px solid #e50914;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.id-avatar-initials {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Profile name - smaller */
+.id-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: center;
+    margin: 2px 0 0 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Member badge - smaller to fit */
+.id-badge {
+    font-size: 0.4rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+/* Swipe hint text - smaller */
+.id-swipe-hint {
+    font-size: 0.4rem;
+    color: #888;
+    margin: 4px 0 0 0;
+    letter-spacing: 0.03em;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .lanyard-fade-overlay {
+        height: 150px;
+    }
+
+    .cards-container {
+        gap: 0.5rem;
+    }
+
+    .id-card-content {
+        top: 62%;
+        gap: 6px;
+        width: 35%;
+    }
+
+    .id-avatar {
+        width: 40px;
+        height: 40px;
+        border-width: 2px;
+    }
+
+    .id-avatar-initials {
+        font-size: 0.85rem;
+    }
+
+    .id-name {
+        font-size: 0.6rem;
+    }
+
+    .id-badge {
+        font-size: 0.35rem;
+        padding: 2px 6px;
+    }
+
+    .id-swipe-hint {
+        font-size: 0.35rem;
+    }
+}
