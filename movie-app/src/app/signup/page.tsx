@@ -109,6 +109,7 @@ export default function SignupPage() {
                                     minLength={6}
                                     className="w-full bg-transparent border-b border-gray-800 py-3 pl-8 pr-8 text-white placeholder:text-gray-600 focus:outline-none focus:border-white transition-colors"
                                 />
+                                {/* Password toggle button */}
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
