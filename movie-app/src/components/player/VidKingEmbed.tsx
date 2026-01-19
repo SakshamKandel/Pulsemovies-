@@ -10,8 +10,19 @@ import { useProfile } from '@/context/ProfileContext';
 // Server configuration - multiple embed providers
 const SERVERS = [
     {
-        id: 'vidking',
+        id: 'vidsrc',
         name: 'Server 1',
+        getUrl: (tmdbId: number, type: 'movie' | 'tv', season?: number, episode?: number) => {
+            const baseUrl = 'https://vidsrc.cc/v2/embed';
+            if (type === 'movie') {
+                return `${baseUrl}/movie/${tmdbId}`;
+            }
+            return `${baseUrl}/tv/${tmdbId}/${season}/${episode}`;
+        }
+    },
+    {
+        id: 'vidking',
+        name: 'Server 2',
         getUrl: (tmdbId: number, type: 'movie' | 'tv', season?: number, episode?: number, color?: string) => {
             const baseUrl = 'https://www.vidking.net/embed';
             const path = type === 'movie' ? `/movie/${tmdbId}` : `/tv/${tmdbId}/${season}/${episode}`;
@@ -21,17 +32,6 @@ const SERVERS = [
                 params.append('episodeSelector', 'true');
             }
             return `${baseUrl}${path}?${params.toString()}`;
-        }
-    },
-    {
-        id: 'vidsrc',
-        name: 'Server 2',
-        getUrl: (tmdbId: number, type: 'movie' | 'tv', season?: number, episode?: number) => {
-            const baseUrl = 'https://vidsrc.cc/v2/embed';
-            if (type === 'movie') {
-                return `${baseUrl}/movie/${tmdbId}`;
-            }
-            return `${baseUrl}/tv/${tmdbId}/${season}/${episode}`;
         }
     },
     {
