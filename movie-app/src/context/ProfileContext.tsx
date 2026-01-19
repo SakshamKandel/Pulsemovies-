@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useWatchlistStore } from '@/store/useWatchlistStore';
+import { useContinueWatchingStore } from '@/store/useContinueWatchingStore';
 
 export interface Profile {
     id: string;
@@ -68,6 +70,18 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
             }
         }
     }, []);
+
+    // Sync data when profile changes
+    useEffect(() => {
+        if (currentProfile) {
+            useWatchlistStore.getState().syncWithDatabase(currentProfile.id);
+            useContinueWatchingStore.getState().syncWithDatabase(currentProfile.id);
+        } else {
+            // Optional: clear stores if no profile
+            useWatchlistStore.getState().clearWatchlist();
+            useContinueWatchingStore.getState().clearAll();
+        }
+    }, [currentProfile]);
 
     const selectProfile = (profile: Profile) => {
         setCurrentProfile(profile);
