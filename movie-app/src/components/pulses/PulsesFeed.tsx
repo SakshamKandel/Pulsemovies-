@@ -9,6 +9,7 @@ import { getImageUrl, cn, formatYear } from '@/lib/utils';
 import type { Movie } from '@/types/movie';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useProfile } from '@/context/ProfileContext';
 
 interface PulsesFeedProps {
     initialMovies: Movie[];
@@ -202,6 +203,7 @@ function PulsesPlayer({
     movie: Movie, isActive: boolean, isMuted: boolean, toggleMute: () => void, isOnline: boolean, connectionQuality: string
 }) {
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
+    const { currentProfile } = useProfile();
     const [inWatchlist, setInWatchlist] = React.useState(false);
     const [mounted, setMounted] = React.useState(false);
 
@@ -221,10 +223,10 @@ function PulsesPlayer({
         e.stopPropagation();
         e.preventDefault();
         if (inWatchlist) {
-            removeFromWatchlist(movie.id);
+            removeFromWatchlist(movie.id, currentProfile?.id);
             setInWatchlist(false);
         } else {
-            addToWatchlist(movie);
+            addToWatchlist(movie, currentProfile?.id);
             setInWatchlist(true);
         }
     };

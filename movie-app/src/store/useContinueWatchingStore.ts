@@ -14,11 +14,11 @@ interface WatchProgress {
 
 interface ContinueWatchingState {
     items: WatchProgress[];
-    addOrUpdate: (item: Movie | TVShow, progress: number, season?: number, episode?: number) => Promise<void>;
+    addOrUpdate: (item: Movie | TVShow, progress: number, profileId?: string, season?: number, episode?: number) => Promise<void>;
     remove: (id: number) => Promise<void>;
     getProgress: (id: number) => WatchProgress | undefined;
     clearAll: () => void;
-    syncWithDatabase: () => Promise<void>;
+    syncWithDatabase: (profileId: string) => Promise<void>;
 }
 
 export const useContinueWatchingStore = create<ContinueWatchingState>()(
@@ -26,7 +26,7 @@ export const useContinueWatchingStore = create<ContinueWatchingState>()(
         (set, get) => ({
             items: [],
 
-            addOrUpdate: async (item, progress, season, episode) => {
+            addOrUpdate: async (item, progress, profileId, season, episode) => {
                 // Optimistic update
                 set((state) => {
                     const existingIndex = state.items.findIndex((i) => i.id === item.id);
@@ -49,8 +49,7 @@ export const useContinueWatchingStore = create<ContinueWatchingState>()(
                 });
 
                 // Sync with DB
-                const session = await getSession();
-                if (session?.user) {
+                if (profileId) {
                     try {
                         const isMovie = 'title' in item;
                         await fetch('/api/history', {
@@ -62,6 +61,7 @@ export const useContinueWatchingStore = create<ContinueWatchingState>()(
                                 title: isMovie ? (item as Movie).title : (item as TVShow).name,
                                 posterPath: item.poster_path,
                                 progress,
+                                profileId,
                             }),
                         });
                     } catch (error) {
@@ -72,53 +72,54 @@ export const useContinueWatchingStore = create<ContinueWatchingState>()(
 
             remove: async (id) => {
                 set((state) => ({
-                    items: state.items.filter((item) => item.id !== id),
+                    items: state.items.filter((i) => i.id !== id),
                 }));
-
-                const session = await getSession();
-                if (session?.user) {
-                    try {
-                        await fetch(`/api/history?tmdbId=${id}`, {
-                            method: 'DELETE',
-                        });
-                    } catch (error) {
-                        console.error('Failed to remove history item', error);
-                    }
-                }
             },
 
-            getProgress: (id) => {
-                return get().items.find((item) => item.id === id);
+            getProgress: (id: number) => {
+                return get().items.find((i) => i.id === id);
             },
 
-            clearAll: () => set({ items: [] }),
+            clearAll: () => {
+                set({ items: [] });
+            },
 
-            syncWithDatabase: async () => {
-                const session = await getSession();
-                if (!session?.user) return;
+            syncWithDatabase: async (profileId: string) => {
+                if (!profileId) return;
 
                 try {
-                    const res = await fetch('/api/history');
+                    const res = await fetch(`/api/history?profileId=${profileId}`);
                     if (res.ok) {
                         const dbItems = await res.json();
-                        const validItems = dbItems.map((dbItem: any) => ({
+                        // Retrieve full details if possible, or create partial objects
+                        // ... (Existing mapping logic)
+
+                        const incomingItems: WatchProgress[] = dbItems.map((dbItem: any) => ({
                             id: dbItem.tmdbId,
                             item: {
                                 id: dbItem.tmdbId,
                                 title: dbItem.title,
                                 name: dbItem.title,
                                 poster_path: dbItem.posterPath,
-                                vote_average: 0, // Placeholder
-                                // Add other required fields depending on usage
+                                vote_average: 0,
+                                // Add minimal required fields to satisfy Movie | TVShow type
+                                overview: '',
+                                release_date: '',
+                                first_air_date: '',
+                                genre_ids: [],
+                                backdrop_path: null,
+                                popularity: 0,
+                                vote_count: 0,
+                                adult: false,
+                                original_language: 'en',
+                                original_title: dbItem.title,
+                                original_name: dbItem.title,
                             } as unknown as Movie | TVShow,
                             progress: dbItem.progress,
-                            timestamp: new Date(dbItem.timestamp).getTime(),
+                            timestamp: new Date(dbItem.updatedAt).getTime(),
                         }));
 
-                        // Merge strategies could be complex, for now we can just use DB as truth 
-                        // or merge latest. The UI uses local store.
-                        // Let's replace local with DB for now to ensure sync across devices
-                        set({ items: validItems });
+                        set({ items: incomingItems });
                     }
                 } catch (error) {
                     console.error('Failed to sync history', error);
@@ -126,7 +127,7 @@ export const useContinueWatchingStore = create<ContinueWatchingState>()(
             },
         }),
         {
-            name: 'pulse-continue-watching',
+            name: 'continue-watching',
         }
     )
 );

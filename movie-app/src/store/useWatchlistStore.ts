@@ -8,11 +8,11 @@ type WatchlistItem = ContentItem & { addedAt: number };
 
 interface WatchlistState {
     items: WatchlistItem[];
-    addToWatchlist: (item: ContentItem) => Promise<void>;
-    removeFromWatchlist: (id: number) => Promise<void>;
+    addToWatchlist: (item: ContentItem, profileId?: string) => Promise<void>;
+    removeFromWatchlist: (id: number, profileId?: string) => Promise<void>;
     isInWatchlist: (id: number) => boolean;
     clearWatchlist: () => void;
-    syncWithDatabase: () => Promise<void>;
+    syncWithDatabase: (profileId: string) => Promise<void>;
 }
 
 export const useWatchlistStore = create<WatchlistState>()(
@@ -20,7 +20,7 @@ export const useWatchlistStore = create<WatchlistState>()(
         (set, get) => ({
             items: [],
 
-            addToWatchlist: async (item) => {
+            addToWatchlist: async (item, profileId) => {
                 const exists = get().items.some((i) => i.id === item.id);
                 if (!exists) {
                     // Optimistic update
@@ -28,9 +28,8 @@ export const useWatchlistStore = create<WatchlistState>()(
                         items: [...state.items, { ...item, addedAt: Date.now() }],
                     }));
 
-                    // Sync with DB if logged in
-                    const session = await getSession();
-                    if (session?.user) {
+                    // Sync with DB if logged in and profileId provided
+                    if (profileId) {
                         try {
                             const isMovie = 'title' in item;
                             await fetch('/api/watchlist', {
@@ -42,6 +41,7 @@ export const useWatchlistStore = create<WatchlistState>()(
                                     title: isMovie ? (item as Movie).title : (item as TVShow).name,
                                     posterPath: item.poster_path,
                                     voteAverage: item.vote_average,
+                                    profileId,
                                 }),
                             });
                         } catch (error) {
@@ -51,17 +51,16 @@ export const useWatchlistStore = create<WatchlistState>()(
                 }
             },
 
-            removeFromWatchlist: async (id) => {
+            removeFromWatchlist: async (id, profileId) => {
                 // Optimistic update
                 set((state) => ({
                     items: state.items.filter((item) => item.id !== id),
                 }));
 
-                // Sync with DB if logged in
-                const session = await getSession();
-                if (session?.user) {
+                // Sync with DB
+                if (profileId) {
                     try {
-                        await fetch(`/api/watchlist?tmdbId=${id}`, {
+                        await fetch(`/api/watchlist?tmdbId=${id}&profileId=${profileId}`, {
                             method: 'DELETE',
                         });
                     } catch (error) {
@@ -78,12 +77,11 @@ export const useWatchlistStore = create<WatchlistState>()(
                 set({ items: [] });
             },
 
-            syncWithDatabase: async () => {
-                const session = await getSession();
-                if (!session?.user) return;
+            syncWithDatabase: async (profileId: string) => {
+                if (!profileId) return;
 
                 try {
-                    const res = await fetch('/api/watchlist');
+                    const res = await fetch(`/api/watchlist?profileId=${profileId}`);
                     if (res.ok) {
                         const dbItems = await res.json();
                         // Transform DB items to local format

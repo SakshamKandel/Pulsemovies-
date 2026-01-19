@@ -12,8 +12,13 @@ interface AddToListButtonProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
+import { useProfile } from '@/context/ProfileContext';
+
+// ...
+
 export function AddToListButton({ item, className, size = 'lg' }: AddToListButtonProps) {
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
+    const { currentProfile } = useProfile();
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -24,9 +29,9 @@ export function AddToListButton({ item, className, size = 'lg' }: AddToListButto
 
     const handleClick = () => {
         if (inWatchlist) {
-            removeFromWatchlist(item.id);
+            removeFromWatchlist(item.id, currentProfile?.id);
         } else {
-            addToWatchlist(item);
+            addToWatchlist(item, currentProfile?.id);
         }
     };
 

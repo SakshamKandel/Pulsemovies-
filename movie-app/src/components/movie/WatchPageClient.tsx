@@ -10,6 +10,7 @@ import { PlayerEmbed } from '@/components/player/VidKingEmbed';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
 import type { MovieDetails, Movie } from '@/types/movie';
 import { MovieCarousel } from '@/components/movie/MovieCarousel';
+import { useProfile } from '@/context/ProfileContext';
 
 interface WatchPageClientProps {
     movie: MovieDetails;
@@ -19,6 +20,7 @@ interface WatchPageClientProps {
 
 export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) {
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
+    const { currentProfile } = useProfile();
     const inWatchlist = isInWatchlist(movie.id);
 
     const year = formatYear(movie.release_date);
@@ -27,9 +29,9 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
 
     const handleWatchlistToggle = () => {
         if (inWatchlist) {
-            removeFromWatchlist(movie.id);
+            removeFromWatchlist(movie.id, currentProfile?.id);
         } else {
-            addToWatchlist(movie as any);
+            addToWatchlist(movie as any, currentProfile?.id);
         }
     };
 

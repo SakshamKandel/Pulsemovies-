@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2, Play, RefreshCw } from 'lucide-react';
 import { useContinueWatchingStore } from '@/store/useContinueWatchingStore';
+import { useProfile } from '@/context/ProfileContext';
 
 // Server configuration - multiple embed providers
 const SERVERS = [
@@ -72,8 +73,10 @@ export function PlayerEmbed({
     const [showPlayer, setShowPlayer] = useState(false);
     const [currentServerIndex, setCurrentServerIndex] = useState(0);
     const playerRef = useRef<HTMLIFrameElement>(null);
+    const lastSaveRef = useRef<number>(0);
 
     const { addOrUpdate } = useContinueWatchingStore();
+    const { currentProfile } = useProfile();
 
     // Accent color for VidKing
     const accentColor = 'd946ef';
@@ -96,7 +99,21 @@ export function PlayerEmbed({
                 if (data?.type === 'PLAYER_EVENT' && data?.data?.event === 'timeupdate') {
                     const { progress } = data.data;
                     if (progress > 1 && progress < 95 && movieTitle) {
-                        // Progress tracking placeholder
+                        const now = Date.now();
+                        // Save every 15 seconds
+                        if (now - lastSaveRef.current > 15000) {
+                            const item = {
+                                id: tmdbId,
+                                title: movieTitle,
+                                name: movieTitle,
+                                poster_path: posterPath,
+                                media_type: type,
+                                vote_average: 0
+                            };
+
+                            addOrUpdate(item as any, progress, currentProfile?.id, season, episode);
+                            lastSaveRef.current = now;
+                        }
                     }
                 }
             } catch (e) {
@@ -106,7 +123,7 @@ export function PlayerEmbed({
 
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
-    }, [movieTitle]);
+    }, [movieTitle, tmdbId, type, season, episode, posterPath, addOrUpdate, currentProfile]);
 
     // Mobile detection
     const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);

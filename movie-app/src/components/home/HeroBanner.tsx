@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { getImageUrl, truncateText, formatYear } from '@/lib/utils';
 import { MOVIE_GENRES } from '@/lib/constants';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
+import { useProfile } from '@/context/ProfileContext';
 import type { Movie } from '@/types/movie';
 
 interface HeroBannerProps {
@@ -19,6 +20,7 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
     const [mounted, setMounted] = React.useState(false);
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
+    const { currentProfile } = useProfile();
 
     const featuredMovies = movies.slice(0, 5);
 
@@ -253,7 +255,7 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
 
                                             {mounted && (
                                                 <button
-                                                    onClick={() => isInWatchlist(movie.id) ? removeFromWatchlist(movie.id) : addToWatchlist(movie)}
+                                                    onClick={() => isInWatchlist(movie.id) ? removeFromWatchlist(movie.id, currentProfile?.id) : addToWatchlist(movie, currentProfile?.id)}
                                                     onMouseDown={(e) => e.stopPropagation()}
                                                     className={cn(
                                                         "flex items-center justify-center w-11 h-11 md:w-14 md:h-14 bg-background-card border border-border transition-colors hover:border-accent-primary",
