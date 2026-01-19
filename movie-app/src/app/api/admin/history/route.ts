@@ -43,7 +43,6 @@ export async function GET(request: NextRequest) {
                 title: item.title,
                 mediaType: item.mediaType,
                 progress: item.progress,
-                duration: item.duration,
                 posterPath: item.posterPath,
                 updatedAt: item.updatedAt,
                 profileName: item.profile.name,
