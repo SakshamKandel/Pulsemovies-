@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "npx tsx prisma/seed-admin.ts",
     "pages:build": "npm install --legacy-peer-deps && npx @opennextjs/cloudflare build",
     "preview": "npx wrangler dev"
   },

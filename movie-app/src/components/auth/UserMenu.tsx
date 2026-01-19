@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, LogOut, Bookmark, Clock, Settings, Film } from 'lucide-react';
+import { User, LogOut, Bookmark, Clock, Settings, Film, Shield } from 'lucide-react';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
 import { useContinueWatchingStore } from '@/store/useContinueWatchingStore';
 import { useProfile } from '@/context/ProfileContext';
@@ -13,6 +13,7 @@ import { useProfile } from '@/context/ProfileContext';
 export function UserMenu() {
     const { data: session, status } = useSession();
     const [isOpen, setIsOpen] = React.useState(false);
+    const [isAdmin, setIsAdmin] = React.useState(false);
     const menuRef = React.useRef<HTMLDivElement>(null);
     const { currentProfile, clearProfile } = useProfile();
 
@@ -27,6 +28,24 @@ export function UserMenu() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Check admin status from database (not session cache)
+    React.useEffect(() => {
+        async function checkAdmin() {
+            if (!session?.user) {
+                setIsAdmin(false);
+                return;
+            }
+            try {
+                const res = await fetch('/api/admin/verify');
+                const data = await res.json();
+                setIsAdmin(res.ok && data.isAdmin === true);
+            } catch {
+                setIsAdmin(false);
+            }
+        }
+        checkAdmin();
+    }, [session]);
+
     if (status === 'loading') {
         return <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />;
     }
@@ -36,7 +55,6 @@ export function UserMenu() {
             <Link
                 href="/login"
                 className="flex items-center h-9 px-5 text-sm font-medium text-white bg-accent-primary hover:bg-accent-hover rounded-full transition-colors shadow-lg shadow-accent-primary/10"
-                onClick={() => { }}
             >
                 Sign In
             </Link>
@@ -58,20 +76,19 @@ export function UserMenu() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 group"
             >
-                <div className="relative w-9 h-9 rounded-full overflow-hidden bg-white/10 border border-white/10 group-hover:border-accent-primary transition-colors flex items-center justify-center">
-                    {displayAvatar ? (
-                        <Image
-                            src={displayAvatar}
-                            alt={displayName}
-                            fill
-                            className="object-cover"
-                        />
-                    ) : (
-                        <span className="text-xs font-semibold text-white/70 group-hover:text-white">
-                            {initials}
-                        </span>
-                    )}
-                </div>
+                {displayAvatar ? (
+                    <Image
+                        src={displayAvatar}
+                        alt={displayName}
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full border border-white/10 object-cover"
+                    />
+                ) : (
+                    <div className="w-8 h-8 rounded-full bg-accent-primary/20 flex items-center justify-center text-accent-primary text-xs font-medium">
+                        {initials}
+                    </div>
+                )}
             </button>
 
             <AnimatePresence>
@@ -137,6 +154,18 @@ export function UserMenu() {
                                 <Settings className="w-4 h-4" />
                                 Settings
                             </Link>
+
+                            {/* Admin Panel - Only visible to verified super admins from database */}
+                            {isAdmin && (
+                                <Link
+                                    href="/admin"
+                                    onClick={() => setIsOpen(false)}
+                                    className="flex items-center gap-3 px-3 py-2 text-sm text-accent-primary hover:bg-accent-primary/10 rounded-lg transition-colors"
+                                >
+                                    <Shield className="w-4 h-4" />
+                                    Admin Panel
+                                </Link>
+                            )}
                         </div>
 
                         {/* Sign Out */}
@@ -156,6 +185,6 @@ export function UserMenu() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div >
+        </div>
     );
 }

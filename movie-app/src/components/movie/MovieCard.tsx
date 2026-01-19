@@ -8,6 +8,7 @@ import { Plus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getImageUrl, formatYear, getContentTitle, getContentDate } from '@/lib/utils';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
+import { useProfile } from '@/context/ProfileContext';
 import type { Movie, TVShow, MovieDetails, TVShowDetails } from '@/types/movie';
 
 type ContentItem = Movie | TVShow | MovieDetails | TVShowDetails;
@@ -20,6 +21,7 @@ interface MovieCardProps {
 
 export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps) {
     const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlistStore();
+    const { currentProfile } = useProfile();
     const [mounted, setMounted] = React.useState(false);
     const [imageError, setImageError] = React.useState(false);
 
@@ -36,8 +38,8 @@ export function MovieCard({ item, index = 0, showRank = false }: MovieCardProps)
     const handleWatchlistToggle = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (inWatchlist) removeFromWatchlist(item.id);
-        else addToWatchlist(item);
+        if (inWatchlist) removeFromWatchlist(item.id, currentProfile?.id);
+        else addToWatchlist(item, currentProfile?.id);
     };
 
     return (

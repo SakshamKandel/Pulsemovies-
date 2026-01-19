@@ -3,11 +3,21 @@
 import { useProfile } from '@/context/ProfileContext';
 import ProfileSelection from './ProfileSelection';
 import { useSession } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 export default function ProfileGate({ children }: { children: React.ReactNode }) {
     const { currentProfile, isLoading } = useProfile();
     const { status } = useSession();
+    const pathname = usePathname();
+
+    // Bypass profile gate for admin routes, login, signup, and public pages
+    const bypassRoutes = ['/admin', '/login', '/signup', '/about', '/terms'];
+    const shouldBypass = bypassRoutes.some(route => pathname?.startsWith(route));
+
+    if (shouldBypass) {
+        return <>{children}</>;
+    }
 
     if (status === 'loading' || isLoading) {
         return (
@@ -29,3 +39,4 @@ export default function ProfileGate({ children }: { children: React.ReactNode })
 
     return <>{children}</>;
 }
+

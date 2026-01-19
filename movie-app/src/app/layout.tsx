@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { Navbar } from "@/components/layout/Navbar";
 import { SITE_CONFIG } from "@/lib/constants";
+import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -42,11 +42,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { Footer } from "@/components/layout/Footer";
-import ProfileGate from "@/components/profiles/ProfileGate";
-
-// ... (existing imports)
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -56,16 +51,9 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="bg-background text-text-primary antialiased" suppressHydrationWarning>
         <Providers>
-          <ProfileGate>
-            <div className="min-h-screen flex flex-col">
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-          </ProfileGate>
+          <LayoutWrapper>{children}</LayoutWrapper>
         </Providers>
       </body>
     </html>
   );
 }
-

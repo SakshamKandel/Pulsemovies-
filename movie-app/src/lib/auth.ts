@@ -3,6 +3,29 @@ import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
+// Extend the default session types
+declare module 'next-auth' {
+    interface Session {
+        user: {
+            id: string;
+            email?: string | null;
+            name?: string | null;
+            image?: string | null;
+            role?: string;
+        };
+    }
+    interface User {
+        role?: string;
+    }
+}
+
+declare module 'next-auth/jwt' {
+    interface JWT {
+        id?: string;
+        role?: string;
+    }
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
     trustHost: true,
     providers: [
@@ -38,7 +61,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     id: user.id,
                     email: user.email,
                     name: user.name,
-                    // image: user.avatar, // Don't put base64 in session to avoid header size limits
+                    role: user.role, // Include role in user object
                 };
             },
         }),
@@ -47,6 +70,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.id = user.id;
+                token.role = user.role; // Store role in JWT
             }
 
             // Support client-side update() to refresh session data
@@ -62,6 +86,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.id = token.id as string;
                 session.user.name = token.name;
                 session.user.image = token.picture;
+                session.user.role = token.role; // Include role in session
             }
             return session;
         },
