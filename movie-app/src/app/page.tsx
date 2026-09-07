@@ -16,12 +16,8 @@ import {
   getTrendingMovies,
   getPopularMovies,
   getTopRatedMovies,
-  getUpcomingMovies,
   getTrendingTV,
-  getPopularTV,
-  getTopRatedTV,
   getMoviesByProvider,
-  getTVByProvider,
   getMoviesWithLogos
 } from '@/lib/tmdb';
 
@@ -42,10 +38,7 @@ export default async function HomePage() {
     trendingMovies,
     popularMovies,
     topRatedMovies,
-    upcomingMovies,
     trendingTV,
-    popularTV,
-    topRatedTV,
     netflixMovies,
     disneyMovies,
     primeMovies,
@@ -54,10 +47,7 @@ export default async function HomePage() {
     getTrendingMovies(),
     getPopularMovies(),
     getTopRatedMovies(),
-    getUpcomingMovies(),
     getTrendingTV(),
-    getPopularTV(),
-    getTopRatedTV(),
     getMoviesByProvider(8), // Netflix
     getMoviesByProvider(337), // Disney+
     getMoviesByProvider(119), // Prime Video
@@ -89,7 +79,7 @@ export default async function HomePage() {
 
       {/* Content Sections */}
       <div className="relative z-10 bg-background">
-        <div className="space-y-14 pb-20 pt-10 md:pt-20">
+        <div className="space-y-12 pb-16 pt-6 md:pt-8">
 
           {/* Mood Discovery - New Feature */}
           <MoodPicker />

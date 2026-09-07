@@ -1,22 +1,27 @@
 'use client';
 
 import * as React from 'react';
-import { Trash2, ListX, Film, Tv, Star, LayoutGrid, List, Clock, Play } from 'lucide-react';
+import { Trash2, ListX, Film, Tv, Star, LayoutGrid, List, Play } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
 import { MovieCard } from '@/components/movie/MovieCard';
 import { getImageUrl, formatYear, getContentTitle, getContentDate } from '@/lib/utils';
 
+import { useProfile } from '@/context/ProfileContext';
+
 type FilterType = 'all' | 'movie' | 'tv';
 type SortType = 'date' | 'name' | 'rating';
 type ViewType = 'grid' | 'list';
 
 export default function MyListPage() {
-    const { items: watchlist, removeFromWatchlist, clearWatchlist } = useWatchlistStore();
+    const { items: watchlist, removeFromWatchlist } = useWatchlistStore();
     const [mounted, setMounted] = React.useState(false);
     const [filter, setFilter] = React.useState<FilterType>('all');
     const [sort, setSort] = React.useState<SortType>('date');
+    const { currentProfile } = useProfile();
+    const [query, setQuery] = React.useState('');
+    const [confirmClear, setConfirmClear] = React.useState(false);
     const [view, setView] = React.useState<ViewType>('grid');
 
     React.useEffect(() => {
@@ -30,7 +35,7 @@ export default function MyListPage() {
 
     // Filter and sort
     const filteredItems = React.useMemo(() => {
-        let items = [...watchlist];
+        let items = watchlist.filter(item => getContentTitle(item).toLowerCase().includes(query.trim().toLowerCase()));
 
         if (filter === 'movie') {
             items = items.filter(item => 'title' in item);
@@ -50,7 +55,7 @@ export default function MyListPage() {
         });
 
         return items;
-    }, [watchlist, filter, sort]);
+    }, [watchlist, filter, sort, query]);
 
     if (!mounted) {
         return (
@@ -73,10 +78,10 @@ export default function MyListPage() {
 
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl md:text-3xl font-bold text-white">My List</h1>
+                    <div><p className="eyebrow mb-2">YOUR PERSONAL COLLECTION</p><h1 className="text-3xl md:text-5xl font-semibold text-white">My List</h1><p className="text-sm text-zinc-400 mt-3">Great stories, saved for the right moment.</p></div>
                     {totalCount > 0 && (
                         <button
-                            onClick={clearWatchlist}
+                            onClick={() => setConfirmClear(true)}
                             className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-red-400 transition-colors"
                         >
                             <Trash2 className="w-4 h-4" />
@@ -85,6 +90,8 @@ export default function MyListPage() {
                     )}
                 </div>
 
+                {confirmClear && <div className="surface-panel p-5 mb-6" role="alert"><p className="text-sm">Remove all {totalCount} saved titles from this profile?</p><div className="flex gap-4 mt-3"><button className="text-red-300" onClick={() => { watchlist.forEach(item => removeFromWatchlist(item.id, currentProfile?.id)); setConfirmClear(false); }}>Remove all titles</button><button onClick={() => setConfirmClear(false)}>Keep my list</button></div></div>}
+                {totalCount > 0 && <input className="collection-search mb-6" aria-label="Search saved titles" placeholder="Find something in your collection…" value={query} onChange={e => setQuery(e.target.value)} />}
                 {/* Stats Row - Clean flat design */}
                 <div className="flex items-center gap-6 mb-6 text-sm">
                     <div className="flex items-center gap-2 text-gray-400">
@@ -106,7 +113,7 @@ export default function MyListPage() {
 
                 {/* Controls - Simple and flat */}
                 {totalCount > 0 && (
-                    <div className="flex items-center justify-between gap-4 mb-6 pb-6 border-b border-white/5">
+                    <div className="collection-toolbar justify-between mb-6">
                         {/* Filter Pills */}
                         <div className="flex items-center gap-2">
                             {(['all', 'movie', 'tv'] as FilterType[]).map((f) => (
@@ -127,6 +134,7 @@ export default function MyListPage() {
                         <div className="flex items-center gap-4">
                             {/* Sort */}
                             <select
+                                aria-label="Sort saved titles"
                                 value={sort}
                                 onChange={(e) => setSort(e.target.value as SortType)}
                                 className="bg-transparent text-sm text-gray-400 border border-white/10 rounded-md px-2 py-1.5 focus:outline-none focus:border-white/20"
@@ -139,7 +147,7 @@ export default function MyListPage() {
                             {/* View Toggle */}
                             <div className="flex items-center border border-white/10 rounded-md">
                                 <button
-                                    onClick={() => setView('grid')}
+                                    aria-label="Grid view" aria-pressed={view === 'grid'} onClick={() => setView('grid')}
                                     className={`flex items-center justify-center w-8 h-8 transition-colors ${view === 'grid'
                                         ? 'bg-white/10 text-white'
                                         : 'text-gray-500 hover:text-white'
@@ -149,7 +157,7 @@ export default function MyListPage() {
                                 </button>
                                 <div className="w-px h-4 bg-white/10" />
                                 <button
-                                    onClick={() => setView('list')}
+                                    aria-label="List view" aria-pressed={view === 'list'} onClick={() => setView('list')}
                                     className={`flex items-center justify-center w-8 h-8 transition-colors ${view === 'list'
                                         ? 'bg-white/10 text-white'
                                         : 'text-gray-500 hover:text-white'
@@ -191,7 +199,7 @@ export default function MyListPage() {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        removeFromWatchlist(item.id);
+                                        removeFromWatchlist(item.id, currentProfile?.id);
                                     }}
                                     className="absolute top-1 left-1 p-1 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all z-40"
                                     title="Remove from list"
@@ -239,11 +247,11 @@ export default function MyListPage() {
                                             <span className={isMovie ? 'text-blue-400' : 'text-green-400'}>
                                                 {isMovie ? 'Movie' : 'TV'}
                                             </span>
-                                            <span>•</span>
+                                            <span>â€¢</span>
                                             <span>{year}</span>
                                             {item.vote_average > 0 && (
                                                 <>
-                                                    <span>•</span>
+                                                    <span>â€¢</span>
                                                     <span className="flex items-center gap-0.5">
                                                         <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                                                         {item.vote_average.toFixed(1)}
@@ -262,7 +270,7 @@ export default function MyListPage() {
                                             <Play className="w-5 h-5 fill-current" />
                                         </Link>
                                         <button
-                                            onClick={() => removeFromWatchlist(item.id)}
+                                            onClick={() => removeFromWatchlist(item.id, currentProfile?.id)}
                                             className="flex items-center justify-center w-6 h-6 text-gray-500 hover:text-red-400 transition-colors"
                                         >
                                             <Trash2 className="w-5 h-5" />

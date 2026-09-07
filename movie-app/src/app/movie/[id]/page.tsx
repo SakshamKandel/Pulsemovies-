@@ -1,3 +1,4 @@
+import { TrailerButton } from '@/components/movie/TrailerButton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -137,21 +138,7 @@ export default async function MovieDetailPage({ params }: Props) {
                                     Watch Now
                                 </Button>
                             </Link>
-                            {trailer && (
-                                <a
-                                    href={`https://www.youtube.com/watch?v=${trailer.key}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    <Button
-                                        variant="secondary"
-                                        size="lg"
-                                        leftIcon={<Film className="w-5 h-5" />}
-                                    >
-                                        Watch Trailer
-                                    </Button>
-                                </a>
-                            )}
+                            <TrailerButton id={movie.id} title={movie.title} type="movie" />
                             <AddToListButton item={movie} size="lg" />
                         </div>
 

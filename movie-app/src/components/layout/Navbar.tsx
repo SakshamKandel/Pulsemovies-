@@ -9,7 +9,6 @@ import { Search, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS } from '@/lib/constants';
 import { useUIStore } from '@/store/useUIStore';
-import { Button } from '@/components/ui/Button';
 import { SearchBar } from '@/components/search/SearchBar';
 import { UserMenu } from '@/components/auth/UserMenu';
 
@@ -42,7 +41,7 @@ export function Navbar() {
         <>
             <header
                 className={cn(
-                    'fixed top-0 left-0 right-0 z-[100] transition-all duration-300',
+                    'site-navbar fixed top-0 left-0 right-0 z-[100] transition-all duration-300',
                     scrolled || isMobileMenuOpen
                         ? 'bg-background border-b border-border'
                         : 'bg-gradient-to-b from-black/80 to-transparent'
@@ -64,15 +63,15 @@ export function Navbar() {
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center gap-8 mt-2">
+                    <div className="hidden md:flex items-center gap-1">
                         {NAV_ITEMS.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    'text-sm font-medium transition-colors hover:text-accent-primary',
+                                    'inline-flex items-center px-3 rounded-full text-sm font-medium transition-colors hover:text-white hover:bg-white/5',
                                     pathname === item.href
-                                        ? 'text-accent-primary'
+                                        ? 'text-violet-300 bg-violet-500/10'
                                         : 'text-text-secondary'
                                 )}
                             >
@@ -85,11 +84,12 @@ export function Navbar() {
                     <div className="flex items-center gap-4">
                         {/* Search Button */}
                         <button
+                            aria-label="Search movies and series" aria-expanded={isSearchOpen}
                             onClick={() => setSearchOpen(!isSearchOpen)}
                             className="flex items-center gap-2 h-9 px-4 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all group"
                         >
                             <Search className="w-4 h-4 group-hover:text-accent-primary transition-colors" />
-                            <span className="hidden sm:inline text-sm font-medium">Search</span>
+                            <span className="hidden sm:inline text-sm font-medium">Find your next watch</span><kbd className="hidden xl:inline text-xs ml-5 border border-white/10 rounded px-1.5">/</kbd>
                         </button>
 
                         {/* User Menu */}
@@ -99,6 +99,7 @@ export function Navbar() {
 
                         {/* Mobile Menu Button */}
                         <button
+                            aria-label="Toggle navigation" aria-expanded={isMobileMenuOpen}
                             onClick={toggleMobileMenu}
                             className="md:hidden p-2 rounded-full text-text-secondary hover:text-white hover:bg-background-card transition-colors"
                         >
@@ -136,7 +137,7 @@ export function Navbar() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[60] bg-background md:hidden flex flex-col"
+                        className="fixed inset-0 z-[110] bg-background md:hidden flex flex-col"
                     >
                         {/* Header with close button */}
                         <div className="flex items-center justify-between px-4 h-16 border-b border-border">

@@ -29,9 +29,9 @@ export default async function PulsesPage() {
     // Shuffle to mix "Old to Gold" with "Latest"
     const shuffledMovies = shuffleArray(uniqueMovies);
 
-    // Take top 45 to ensure we have a deep buffer (user requested ~100 but 45 is safe for API limits)
+    // Keep the initial preview batch small to bound startup requests.
     // We filter for videos, so we start with more candidates
-    const withVideos = await getMoviesWithVideos(shuffledMovies.slice(0, 45));
+    const withVideos = await getMoviesWithVideos(shuffledMovies.slice(0, 12));
 
     return (
         <div className="bg-black min-h-screen">

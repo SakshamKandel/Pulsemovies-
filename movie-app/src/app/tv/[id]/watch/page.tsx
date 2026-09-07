@@ -1,3 +1,4 @@
+import { TrailerRail } from '@/components/movie/TrailerRail';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -99,7 +100,6 @@ export default async function WatchTVPage({ params, searchParams }: Props) {
                                 season={seasonNumber}
                                 episode={episodeNumber}
                                 className="w-full"
-                                description={currentEpisode?.overview || show.overview}
                                 movieTitle={show.name}
                                 posterPath={show.poster_path || undefined}
                             />
@@ -238,6 +238,7 @@ export default async function WatchTVPage({ params, searchParams }: Props) {
                     </div>
                 </div>
             </div>
+        <div className="relative container mx-auto px-4 pb-12"><TrailerRail items={similar} /></div>
         </div>
     );
 }

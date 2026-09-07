@@ -17,7 +17,22 @@ const tmdbApi = axios.create({
     params: {
         api_key: TMDB_API_KEY,
     },
+    timeout: 15000,
 });
+
+// Automatic retry for transient network drops (e.g. ECONNRESET, ETIMEDOUT, 429)
+tmdbApi.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const config = error.config;
+        if (!config || (config as any).__retryCount >= 2) {
+            return Promise.reject(error);
+        }
+        (config as any).__retryCount = ((config as any).__retryCount || 0) + 1;
+        await new Promise((resolve) => setTimeout(resolve, 500 * (config as any).__retryCount));
+        return tmdbApi(config);
+    }
+);
 
 // Fetch trending movies
 export async function getTrendingMovies(page: number = 1): Promise<MovieListResponse> {
@@ -56,7 +71,7 @@ export async function getMoviesWithVideos(movies: Movie[]): Promise<Movie[]> {
             try {
                 const details = await getMovieDetails(movie.id);
                 // Filter for official trailers if possible, or just take the first video
-                const videos = details.videos?.results || [];
+                const videos = (details.videos?.results || []).filter(v => v.site === 'YouTube' && /^[\w-]{11}$/.test(v.key));
                 const trailer = videos.find(v => v.type === 'Trailer') || videos[0];
 
                 // We'll attach the video key to the movie object if we modify the type, 
@@ -104,15 +119,32 @@ export async function getNowPlayingMovies(page: number = 1): Promise<MovieListRe
     return response.data;
 }
 
+const detailCache = new Map<string, { value: MovieDetails | TVShowDetails; time: number }>();
+const detailRequests = new Map<string, Promise<MovieDetails | TVShowDetails>>();
+async function fetchDetails<T extends MovieDetails | TVShowDetails>(path: string): Promise<T> {
+    const cached = detailCache.get(path);
+    if (cached && Date.now() - cached.time < 300000) return cached.value as T;
+    const pending = detailRequests.get(path);
+    if (pending) return pending as Promise<T>;
+    const request = tmdbApi.get<T>(path, { params: {
+        append_to_response: 'credits,videos,similar,recommendations,images',
+        include_image_language: 'en,null',
+    } }).then(response => {
+        if (detailCache.size >= 40) detailCache.delete(detailCache.keys().next().value!);
+        detailCache.set(path, { value: response.data, time: Date.now() });
+        return response.data;
+    }).catch(error => {
+        const transient = axios.isAxiosError(error) && (!error.response || error.response.status === 429 || error.response.status >= 500);
+        if (transient && cached && Date.now() - cached.time < 86400000) return cached.value as T;
+        throw error;
+    }).finally(() => detailRequests.delete(path));
+    detailRequests.set(path, request);
+    return request;
+}
+
 // Fetch movie details with credits, videos, similar, and images (for logos)
 export async function getMovieDetails(id: number): Promise<MovieDetails> {
-    const response = await tmdbApi.get(ENDPOINTS.movieDetails(id), {
-        params: {
-            append_to_response: 'credits,videos,similar,recommendations,images',
-            include_image_language: 'en,null',
-        },
-    });
-    return response.data;
+    return fetchDetails<MovieDetails>(ENDPOINTS.movieDetails(id));
 }
 
 // Fetch trending TV shows
@@ -135,13 +167,7 @@ export async function getTopRatedTV(page: number = 1): Promise<TVShowListRespons
 
 // Fetch TV show details
 export async function getTVDetails(id: number): Promise<TVShowDetails> {
-    const response = await tmdbApi.get(ENDPOINTS.tvDetails(id), {
-        params: {
-            append_to_response: 'credits,videos,similar,recommendations,images',
-            include_image_language: 'en,null',
-        },
-    });
-    return response.data;
+    return fetchDetails<TVShowDetails>(ENDPOINTS.tvDetails(id));
 }
 
 // Fetch TV season details
@@ -285,19 +311,18 @@ export async function getMovieRecommendations(id: number): Promise<MovieListResp
     return response.data;
 }
 
-// Get movie trailer key for hover preview
-export async function getMovieTrailerKey(id: number): Promise<string | null> {
-    try {
-        const response = await tmdbApi.get(`/movie/${id}/videos`);
-        const videos = response.data.results || [];
-        // Prioritize official trailers, then teasers, then any video
-        const trailer = videos.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube')
-            || videos.find((v: any) => v.type === 'Teaser' && v.site === 'YouTube')
-            || videos.find((v: any) => v.site === 'YouTube');
-        return trailer ? trailer.key : null;
-    } catch {
-        return null;
-    }
+const trailerKeys = new Map<string, Promise<string | null>>();
+export function getMovieTrailerKey(id: number, type: 'movie' | 'tv' = 'movie'): Promise<string | null> {
+    const cacheKey = `${type}:${id}`;
+    const cached = trailerKeys.get(cacheKey);
+    if (cached) return cached;
+    if (trailerKeys.size >= 80) trailerKeys.delete(trailerKeys.keys().next().value!);
+    const result = tmdbApi.get<{ results: import('@/types/movie').Video[] }>(`/${type}/${id}/videos`).then(response => {
+        const videos = response.data.results.filter(v => v.site === 'YouTube' && /^[\w-]{11}$/.test(v.key));
+        return (videos.find(v => v.type === 'Trailer' && v.official) || videos.find(v => v.type === 'Trailer') || videos.find(v => v.type === 'Teaser'))?.key || null;
+    }).catch(() => { trailerKeys.delete(cacheKey); return null; });
+    trailerKeys.set(cacheKey, result);
+    return result;
 }
 
 // Get award-winning / Oscar-caliber movies (use top rated which gives true classics)

@@ -1,6 +1,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { TrailerProvider } from '@/components/movie/TrailerProvider';
+import { TrailerRail } from '@/components/movie/TrailerRail';
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import ProfileGate from "@/components/profiles/ProfileGate";
@@ -16,11 +18,13 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
     return (
         <ProfileGate>
-            <div className="min-h-screen flex flex-col">
+            <TrailerProvider><div className="site-shell min-h-screen flex flex-col">
+                <a href="#page-content" className="skip-link">Skip to content</a>
                 <Navbar />
-                <main className="flex-1">{children}</main>
+                <main id="page-content" className="flex-1">{children}</main>
+                {!pathname?.startsWith('/pulses') && !pathname?.endsWith('/watch') && !['/login', '/signup', '/who-is-watching', '/about', '/terms'].includes(pathname || '') && <TrailerRail key={pathname} />}
                 <Footer />
-            </div>
+            </div></TrailerProvider>
         </ProfileGate>
     );
 }

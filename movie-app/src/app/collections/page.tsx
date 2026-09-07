@@ -1,3 +1,4 @@
+import { PageHeading } from '@/components/ui/PageHeading';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { getMoviesByGenre, getTopRatedMovies } from '@/lib/tmdb';
@@ -67,7 +68,7 @@ export default async function CollectionsPage() {
     return (
         <div className="min-h-screen pt-20 pb-16">
             <div className="container mx-auto px-4 md:px-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Collections</h1>
+                <PageHeading title="Collections" eyebrow="HANDPICKED WORLDS" description="Explore the collections, discover the connections, and find your next movie night." />
                 <p className="text-text-muted mb-10">Curated lists to help you find your next watch</p>
 
                 {COLLECTIONS.map((collection) => (

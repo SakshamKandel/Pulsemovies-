@@ -3,13 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Star, Calendar, Clock, Play, Plus, Check } from 'lucide-react';
+import { ArrowLeft, Star, Play, Plus, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { formatRuntime, formatYear, getImageUrl } from '@/lib/utils';
 import { PlayerEmbed } from '@/components/player/VidKingEmbed';
 import { useWatchlistStore } from '@/store/useWatchlistStore';
 import type { MovieDetails, Movie } from '@/types/movie';
-import { MovieCarousel } from '@/components/movie/MovieCarousel';
+import { TrailerRail } from '@/components/movie/TrailerRail';
+import { useTrailer } from '@/components/movie/TrailerProvider';
 import { useProfile } from '@/context/ProfileContext';
 
 interface WatchPageClientProps {
@@ -25,53 +26,55 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
 
     const year = formatYear(movie.release_date);
     const runtime = formatRuntime(movie.runtime);
+    const openTrailer = useTrailer();
+    const [theater, setTheater] = React.useState(true);
     const cast = movie.credits?.cast.slice(0, 15) || [];
 
     const handleWatchlistToggle = () => {
         if (inWatchlist) {
             removeFromWatchlist(movie.id, currentProfile?.id);
         } else {
-            addToWatchlist(movie as any, currentProfile?.id);
+            addToWatchlist(movie, currentProfile?.id);
         }
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-accent-primary/30 pt-24 md:pt-28">
+        <div className="watch-cinema min-h-screen bg-black text-white selection:bg-accent-primary/30 pt-16">
 
             {/* Main Content Area */}
-            <main className="container mx-auto px-4 pb-12">
+            <div className="w-full pb-12">
 
                 {/* Back Button */}
-                <div className="mb-6">
+                <div className="watch-navigation flex items-center justify-between gap-4 px-4 md:px-8">
                     <Link
                         href={`/movie/${movie.id}`}
                         className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />
-                        <span className="font-medium">Back to Details</span>
+                        <span className="text-sm">{movie.title}</span>
                     </Link>
+                    <button className="text-xs text-zinc-400" aria-pressed={theater} onClick={() => setTheater(!theater)}>{theater ? 'Compact view' : 'Cinema view'}</button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                <div className={`grid grid-cols-1 gap-8 ${theater ? "" : "lg:grid-cols-12"}`}>
 
                     {/* Left Column: Player & Info (Width: 9/12) */}
-                    <div className="lg:col-span-9 space-y-8">
+                    <div className={`${theater ? "" : "lg:col-span-8"} min-w-0 space-y-8`}>
 
                         {/* Player Container */}
-                        <div className="w-full bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 relative">
-                            <div className="aspect-video w-full">
-                                <PlayerEmbed
-                                    tmdbId={movie.id}
-                                    type="movie"
-                                    movieTitle={movie.title}
-                                    posterPath={movie.poster_path || undefined}
-                                    description={movie.overview}
-                                />
-                            </div>
+                        <div className="watch-stage overflow-hidden">
+
+                            <PlayerEmbed
+                                tmdbId={movie.id}
+                                type="movie"
+                                movieTitle={movie.title}
+                                posterPath={movie.poster_path || undefined}
+                            />
                         </div>
 
                         {/* Movie Information */}
-                        <div className="space-y-6">
+                        <div className="watch-story relative isolate px-5 md:px-12 py-12 md:py-20 space-y-6">
+                            {movie.backdrop_path && <div className="absolute inset-0 -z-10 pointer-events-none"><Image src={getImageUrl(movie.backdrop_path, 'original', 'backdrop')} alt="" fill sizes="100vw" className="object-cover object-top" /><div className="absolute inset-0 watch-story-fade" /></div>}
                             {/* Header: Logo/Title & Actions */}
                             <div className="flex flex-col md:flex-row gap-6 md:items-start justify-between">
                                 <div className="space-y-4 flex-1">
@@ -131,6 +134,11 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
                                 </div>
                             </div>
 
+                            <button onClick={() => openTrailer({ id: movie.id, title: movie.title, type: 'movie' })} className="inline-flex items-center gap-2 text-sm text-violet-300"><Play size={16} /> Watch trailer</button>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                                {[['Released', year], ['Runtime', runtime || 'Not listed'], ['Language', movie.original_language?.toUpperCase()], ['Rating', `${movie.vote_average.toFixed(1)} / 10`]].map(([label, value]) => <div key={label} className="border-l border-white/20 pl-4 py-1"><p className="text-xs text-zinc-500 mb-1">{label}</p><p>{value}</p></div>)}
+                            </div>
+                            <h2 className="text-lg">The story</h2>
                             {/* Overview */}
                             <p className="text-gray-300 text-lg leading-relaxed max-w-4xl">
                                 {movie.overview}
@@ -172,62 +180,10 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
                         </div>
                     </div>
 
-                    {/* Right Column: Sidebar (Width: 3/12) */}
-                    <div className="lg:col-span-3 space-y-6">
-                        <div className="sticky top-28">
-                            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                <span className="w-1 h-6 bg-accent-primary rounded-full" />
-                                More Like This
-                            </h3>
-
-                            {/* Scrollable list for Sidebar */}
-                            <div className="space-y-3 max-h-[calc(100vh-150px)] overflow-y-auto custom-scrollbar pr-2">
-                                {similar.slice(0, 10).map((item) => (
-                                    <Link
-                                        key={item.id}
-                                        href={`/movie/${item.id}/watch`}
-                                        className="flex gap-3 p-2 rounded-xl group hover:bg-white/5 transition-colors"
-                                    >
-                                        <div className="relative w-32 aspect-video bg-zinc-800 rounded-lg overflow-hidden flex-shrink-0">
-                                            {item.backdrop_path ? (
-                                                <Image
-                                                    src={getImageUrl(item.backdrop_path, 'small', 'backdrop')}
-                                                    alt={item.title}
-                                                    fill
-                                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <Play className="w-8 h-8 text-white/20" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                            <h4 className="text-sm font-medium text-white line-clamp-2 group-hover:text-accent-primary transition-colors">
-                                                {item.title}
-                                            </h4>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                                                <span className="text-xs text-gray-400">{item.vote_average.toFixed(1)}</span>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-
-                            {similar.length === 0 && (
-                                <div className="text-gray-500 text-sm">No similar movies available.</div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Mobile Only: Recommendation Carousel at bottom if needed */}
-                    <div className="lg:hidden col-span-1 border-t border-white/5 pt-8">
-                        <MovieCarousel title="You May Also Like" items={similar} />
-                    </div>
+                    <aside className={`${theater ? '' : 'lg:col-span-4'} min-w-0`}><TrailerRail items={similar} compact={!theater} /></aside>
 
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

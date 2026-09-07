@@ -44,3 +44,13 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+### Development on Windows
+
+Run `npm run dev` from `movie-app`. Development uses Webpack and a 1536 MB
+JavaScript heap limit to avoid excessive Turbopack/PostCSS workers on memory-constrained machines.
+Next.js worker concurrency is limited to two. This heap limit is not a total process-memory limit.
+Stop the server with Ctrl+C before starting another instance or running a production build.
+Movie metadata and trailers require the configured TMDB connection; a temporary connection
+failure displays a retry screen.

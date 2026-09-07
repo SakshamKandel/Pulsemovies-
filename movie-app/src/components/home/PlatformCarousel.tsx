@@ -117,7 +117,7 @@ export function PlatformCarousel({ platform, platformKey, items, className }: Pl
                         <button
                             onClick={() => scroll('left')}
                             className={cn(
-                                'p-1.5 rounded-full transition-colors',
+                                'inline-flex items-center justify-center p-1.5 rounded-full transition-colors',
                                 !canScrollLeft ? 'opacity-30' : 'hover:bg-white/10'
                             )}
                             style={{ color: platform.accentColor }}
@@ -127,7 +127,7 @@ export function PlatformCarousel({ platform, platformKey, items, className }: Pl
                         <button
                             onClick={() => scroll('right')}
                             className={cn(
-                                'p-1.5 rounded-full transition-colors',
+                                'inline-flex items-center justify-center p-1.5 rounded-full transition-colors',
                                 !canScrollRight ? 'opacity-30' : 'hover:bg-white/10'
                             )}
                             style={{ color: platform.accentColor }}
@@ -137,7 +137,7 @@ export function PlatformCarousel({ platform, platformKey, items, className }: Pl
 
                         <Link
                             href={`/platform/${platformKey}`}
-                            className="ml-1 text-xs font-medium px-3 py-1 rounded-full transition-all hover:scale-105"
+                            className="ml-1 inline-flex items-center justify-center shrink-0 min-h-11 whitespace-nowrap text-xs font-medium px-4 rounded-full transition-colors"
                             style={{
                                 color: platform.accentColor,
                                 background: `${platform.accentColor}15`,

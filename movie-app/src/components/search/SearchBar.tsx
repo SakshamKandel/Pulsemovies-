@@ -8,8 +8,7 @@ import { cn } from '@/lib/utils';
 import { searchMulti } from '@/lib/tmdb';
 import { getImageUrl, getContentTitle, isMovie } from '@/lib/utils';
 import { useUIStore } from '@/store/useUIStore';
-import { MOVIE_GENRES, TV_GENRES } from '@/lib/constants';
-import type { Movie, TVShow, Person } from '@/types/movie';
+import type { Movie, TVShow } from '@/types/movie';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -37,8 +36,9 @@ export function SearchBar() {
         inputRef.current?.focus();
     }, []);
 
-    // Debounced search
+    // Ignore responses from queries that have already changed.
     React.useEffect(() => {
+        let active = true;
         if (debounceRef.current) {
             clearTimeout(debounceRef.current);
         }
@@ -46,14 +46,16 @@ export function SearchBar() {
         if (query.trim().length < 2) {
             setResults([]);
             setShowResults(false);
+            setIsLoading(false);
             return;
         }
 
         setIsLoading(true);
-        setIsLoading(true);
+        setShowResults(false);
         debounceRef.current = setTimeout(async () => {
             try {
-                const data = await searchMulti(query);
+                const data = await searchMulti(query.trim());
+                if (!active) return;
                 if (data && data.results) {
                     // Filter out people and limit to 8 results
                     const filtered = data.results
@@ -65,15 +67,17 @@ export function SearchBar() {
                 }
                 setShowResults(true);
             } catch (error) {
+                if (!active) return;
                 console.error('Search error:', error);
                 setResults([]);
                 setShowResults(true);
             } finally {
-                setIsLoading(false);
+                if (active) setIsLoading(false);
             }
         }, 300);
 
         return () => {
+            active = false;
             if (debounceRef.current) {
                 clearTimeout(debounceRef.current);
             }
@@ -119,8 +123,10 @@ export function SearchBar() {
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search movies, TV shows, actors..."
-                        className="w-full h-12 pl-12 pr-12 bg-zinc-900 border border-zinc-700 rounded-lg text-white text-base placeholder:text-white/40 focus:outline-none focus:border-accent-primary transition-colors"
+                        aria-label="Search movies and TV shows"
+                        autoComplete="off"
+                        placeholder="A title. A new obsession. Search movies & series…"
+                        className="w-full h-16 pl-12 pr-14 bg-white/[0.04] border border-white/15 rounded-2xl text-white text-base placeholder:text-white/40 focus:outline-none focus:border-accent-primary transition-colors"
                         style={{ pointerEvents: 'auto' }}
                     />
 
@@ -131,6 +137,7 @@ export function SearchBar() {
                         ) : query && (
                             <button
                                 type="button"
+                                aria-label="Clear search"
                                 onClick={clearSearch}
                                 className="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-pointer"
                                 style={{ pointerEvents: 'auto' }}
@@ -176,7 +183,7 @@ export function SearchBar() {
                         initial={{ opacity: 0, y: -10, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                        className="absolute top-full left-0 right-0 mt-3 bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100] pointer-events-auto"
+                        className="max-h-[65dvh] overflow-y-auto absolute top-full left-0 right-0 mt-3 bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100] pointer-events-auto"
                         style={{ pointerEvents: 'auto' }}
                     >
                         {results.length > 0 ? (
@@ -193,7 +200,7 @@ export function SearchBar() {
 
                                         return (
                                             <motion.div
-                                                key={item.id}
+                                                key={`${item.media_type}:${item.id}`}
                                                 initial={{ opacity: 0, x: -10 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 transition={{ delay: index * 0.03 }}

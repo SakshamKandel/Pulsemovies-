@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node --max-old-space-size=1536 node_modules/next/dist/bin/next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -11,6 +11,8 @@
     "db:push": "prisma db push",
     "db:seed": "npx tsx prisma/seed-admin.ts",
     "pages:build": "npm install --legacy-peer-deps && npx @opennextjs/cloudflare build",
+    "build:cf": "opennextjs-cloudflare build",
+    "deploy:cf": "opennextjs-cloudflare build && wrangler deploy",
     "preview": "npx wrangler dev"
   },
   "dependencies": {

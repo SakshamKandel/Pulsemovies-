@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, Play, Info, Volume2, VolumeX, Plus, Check, WifiOff, SignalLow } from 'lucide-react';
+import { ChevronUp, ChevronDown, Play, Volume2, VolumeX, Plus, Check, WifiOff, SignalLow } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getImageUrl, cn, formatYear } from '@/lib/utils';
@@ -18,10 +17,10 @@ interface PulsesFeedProps {
 export default function PulsesFeed({ initialMovies }: PulsesFeedProps) {
     // Filter out movies without videos/backdrops to ensure high quality
     const validInitialMovies = React.useMemo(() =>
-        initialMovies.filter(m => m.video_key || m.backdrop_path),
+        initialMovies.filter(m => m.video_key),
         [initialMovies]);
 
-    const [movies, setMovies] = React.useState<Movie[]>(validInitialMovies);
+    const movies = validInitialMovies;
     const [activeIndex, setActiveIndex] = React.useState(0);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const [isMuted, setIsMuted] = React.useState(true);
@@ -36,19 +35,15 @@ export default function PulsesFeed({ initialMovies }: PulsesFeedProps) {
             setActiveIndex(index);
         }
 
-        // Infinite Scroll: Load more when nearing the end (last 3 items)
-        if (index >= movies.length - 3) {
-            // Append the initial batch again to create a loop
-            setMovies(prev => [...prev, ...validInitialMovies]);
-        }
+
     };
 
     // Navigate to specific index
     const navigateTo = React.useCallback((index: number) => {
         const container = containerRef.current;
-        if (!container) return;
+        if (!container || !movies.length) return;
 
-        const clampedIndex = Math.max(0, Math.min(index, movies.length - 1));
+        const clampedIndex = (index + movies.length) % movies.length;
         container.scrollTo({
             top: clampedIndex * container.clientHeight,
             behavior: 'smooth'
@@ -60,7 +55,7 @@ export default function PulsesFeed({ initialMovies }: PulsesFeedProps) {
         const handleKeyDown = (e: KeyboardEvent) => {
             // Don't trigger if typing in an input
             const target = e.target as HTMLElement;
-            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable || !!document.querySelector('dialog[open]')) return;
 
             if (e.key === 'ArrowDown' || e.key === 'j') {
                 e.preventDefault();
@@ -75,10 +70,12 @@ export default function PulsesFeed({ initialMovies }: PulsesFeedProps) {
         };
 
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+
+
+    return () => window.removeEventListener('keydown', handleKeyDown);
     }, [activeIndex, navigateTo]);
 
-    if (validInitialMovies.length === 0) return null;
+    if (!movies.length) return <div className="min-h-[80dvh] flex flex-col items-center justify-center text-center px-6"><p className="eyebrow">PULSES</p><h1 className="text-3xl mt-3">A quiet moment between trailers</h1><p className="text-zinc-400 mt-3">No previews are available right now. Explore the movie library instead.</p><Link href="/browse/movies" className="mt-6 px-6 py-3 rounded-full bg-violet-600">Explore movies</Link></div>;
 
     return (
         <div
@@ -88,7 +85,7 @@ export default function PulsesFeed({ initialMovies }: PulsesFeedProps) {
             onScroll={handleScroll}
             onMouseDown={(e) => {
                 const container = e.currentTarget;
-                if (!container) return;
+                if (!container || !movies.length) return;
 
                 container.dataset.isDragging = 'true';
                 container.dataset.startY = e.pageY.toString();
@@ -113,7 +110,7 @@ export default function PulsesFeed({ initialMovies }: PulsesFeedProps) {
             }}
             onMouseUp={(e) => {
                 const container = e.currentTarget;
-                if (!container) return;
+                if (!container || !movies.length) return;
 
                 container.dataset.isDragging = 'false';
                 container.style.cursor = 'grab';
@@ -165,7 +162,7 @@ export default function PulsesFeed({ initialMovies }: PulsesFeedProps) {
             }}
         >
             {/* Navigation Arrows Overlay */}
-            <div className="fixed inset-0 pointer-events-none z-50 flex flex-col justify-between items-center py-12 md:py-6">
+            <div className="fixed inset-0 pointer-events-none z-50 flex flex-col justify-between items-center pt-20 pb-6">
                 <div className={cn("transition-opacity duration-300 drop-shadow-md", activeIndex === 0 ? "opacity-0" : "opacity-75")}>
                     <ChevronUp className="w-10 h-10 text-white animate-bounce" />
                 </div>
@@ -264,7 +261,7 @@ function PulsesPlayer({
 
                         {/* Video Frame */}
                         <iframe
-                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[150%] md:w-[150%] md:h-[150%] object-cover pointer-events-none"
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full object-cover pointer-events-none"
                             src={`https://www.youtube.com/embed/${movie.video_key}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&disablekb=1&fs=0&modestbranding=1&loop=1&playlist=${movie.video_key}&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`}
                             allow="autoplay; encrypted-media"
                             title={movie.title}

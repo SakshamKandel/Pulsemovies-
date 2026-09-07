@@ -1,3 +1,4 @@
+import { PageHeading } from '@/components/ui/PageHeading';
 import { getPopularTV, getTopRatedTV, getTrendingTV } from '@/lib/tmdb';
 import { MovieCard } from '@/components/movie/MovieCard';
 import { TV_GENRES } from '@/lib/constants';
@@ -44,7 +45,7 @@ export default async function SeriesPage({ searchParams }: PageProps) {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <div className="container mx-auto px-4 md:px-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">{pageTitle}</h1>
+                <PageHeading title={pageTitle} eyebrow="ONE MORE EPISODE" description="New worlds, familiar faces, and your next great series." />
 
                 {/* Sort Options */}
                 <div className="flex flex-wrap gap-3 mb-8 items-center">

@@ -151,7 +151,7 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
     if (featuredMovies.length === 0) return null;
 
     return (
-        <div className={cn('relative w-full h-[75vh] min-h-[600px] bg-background group', className)}>
+        <div className={cn('cinema-hero relative w-full bg-background group', className)}>
             <div
                 ref={scrollContainerRef}
                 className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar cursor-grab"
@@ -185,9 +185,9 @@ export function HeroBanner({ movies, className }: HeroBannerProps) {
                             </div>
 
                             {/* Content Grid */}
-                            <div className="absolute inset-0 flex items-center z-10 pointer-events-none">
+                            <div className="absolute inset-0 flex items-end pb-20 md:pb-24 z-10 pointer-events-none">
                                 <div className="container mx-auto px-4 md:px-8 pointer-events-auto">
-                                    <div className="max-w-2xl space-y-6 md:space-y-8">
+                                    <div className="max-w-2xl space-y-5 md:space-y-6">
                                         {/* Title Section */}
                                         <div className="space-y-4">
                                             {movie.images?.logos?.[0] ? (

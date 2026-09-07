@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    cpus: 2,
+    webpackMemoryOptimizations: true,
+  },
   images: {
     unoptimized: true, // Bypass image optimization limits - loads directly from TMDB CDN
     remotePatterns: [

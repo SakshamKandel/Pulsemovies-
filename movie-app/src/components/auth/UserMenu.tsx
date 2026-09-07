@@ -50,16 +50,8 @@ export function UserMenu() {
         return <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />;
     }
 
-    if (!session) {
-        return (
-            <Link
-                href="/login"
-                className="flex items-center h-9 px-5 text-sm font-medium text-white bg-accent-primary hover:bg-accent-hover rounded-full transition-colors shadow-lg shadow-accent-primary/10"
-            >
-                Sign In
-            </Link>
-        );
-    }
+    // Temporarily hide the sign-in entry; login routes and session handling stay available.
+    if (!session) return null;
 
     const displayName = currentProfile?.name || session.user?.name || 'User';
     const displayAvatar = currentProfile?.avatar || session.user?.image;

@@ -173,7 +173,7 @@ export function MovieCarousel({
                     {seeMoreLink && (
                         <Link
                             href={seeMoreLink}
-                            className="ml-1 text-sm font-medium text-accent-primary hover:text-accent-primary/80 transition-colors"
+                            className="ml-1 inline-flex items-center justify-center shrink-0 whitespace-nowrap text-sm font-medium text-accent-primary hover:text-accent-primary/80 transition-colors"
                         >
                             See More →
                         </Link>

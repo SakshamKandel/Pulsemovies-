@@ -1,3 +1,4 @@
+import { PageHeading } from '@/components/ui/PageHeading';
 import { getPopularMovies, getPopularTV, getTrendingMovies } from '@/lib/tmdb';
 import { MovieCard } from '@/components/movie/MovieCard';
 import { MOVIE_GENRES } from '@/lib/constants';
@@ -29,7 +30,7 @@ export default async function BrowsePage() {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <div className="container mx-auto px-4 md:px-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-8">Browse All</h1>
+                <PageHeading title="Browse All" eyebrow="THE FULL PICTURE" description="Explore movies and series. Follow your mood, find a favorite, or try something unexpected." />
 
                 {/* Genre Pills */}
                 <div className="flex flex-wrap gap-3 mb-12">

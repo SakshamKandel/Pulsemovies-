@@ -1,3 +1,4 @@
+import { PageHeading } from '@/components/ui/PageHeading';
 import { getPopularMovies, getTopRatedMovies, getNowPlayingMovies, getUpcomingMovies, getTrendingMovies, getMoviesByGenre, getHindiMovies } from '@/lib/tmdb';
 import { MovieCard } from '@/components/movie/MovieCard';
 import { MOVIE_GENRES } from '@/lib/constants';
@@ -69,7 +70,7 @@ export default async function MoviesPage({ searchParams }: PageProps) {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <div className="container mx-auto px-4 md:px-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">{pageTitle}</h1>
+                <PageHeading title={pageTitle} eyebrow="CURATED FOR YOUR CURIOSITY" description="From opening night to all-time greats. Find the film that stays with you." />
 
                 {/* Filters Container */}
                 <div className="flex flex-col gap-6 mb-10">
