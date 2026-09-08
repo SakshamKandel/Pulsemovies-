@@ -62,7 +62,9 @@ function PlayerFrame({
         <div
             ref={containerRef}
             onMouseLeave={handleMouseLeave}
-            className="cinema-player-frame group relative aspect-video w-full bg-black overflow-hidden select-none"
+            className={`cinema-player-frame group relative w-full bg-black overflow-hidden select-none ${
+                isFullscreen ? 'h-full flex items-center justify-center' : 'aspect-video'
+            }`}
         >
             <iframe
                 ref={iframeRef}
@@ -92,15 +94,32 @@ function PlayerFrame({
                 />
             )}
 
-            {/* Floating Fullscreen button on hover in top-right corner */}
-            <div className="absolute top-3.5 right-3.5 z-30 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-auto">
+            {/* Fullscreen toggle button: ALWAYS visible in fullscreen so the user can easily minimize */}
+            <div
+                className={`absolute top-4 right-4 z-40 transition-all duration-200 pointer-events-auto ${
+                    isFullscreen
+                        ? 'opacity-90 hover:opacity-100 scale-100'
+                        : 'opacity-0 group-hover:opacity-100'
+                }`}
+            >
                 <button
                     onClick={onToggleFullscreen}
-                    className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/80 hover:bg-black text-white/90 hover:text-white backdrop-blur-md border border-white/20 transition-all shadow-2xl hover:scale-105 active:scale-95"
-                    title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
+                    className={`flex items-center justify-center rounded-xl bg-black/85 hover:bg-black text-white backdrop-blur-md border border-white/25 transition-all shadow-2xl hover:scale-105 active:scale-95 ${
+                        isFullscreen
+                            ? 'px-3.5 py-2 gap-2'
+                            : 'w-9 h-9 sm:w-10 sm:h-10'
+                    }`}
+                    title={isFullscreen ? 'Exit Fullscreen (Esc or F)' : 'Fullscreen (F)'}
                     aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                 >
-                    {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+                    {isFullscreen ? (
+                        <>
+                            <Minimize className="w-4 h-4 text-violet-400" />
+                            <span className="text-xs font-semibold tracking-wide text-white">Exit Fullscreen</span>
+                        </>
+                    ) : (
+                        <Maximize className="w-5 h-5" />
+                    )}
                 </button>
             </div>
 
@@ -142,13 +161,14 @@ export function ThirdPartyPlayer({
     const containerRef = useRef<HTMLDivElement>(null);
 
     const toggleFullscreen = useCallback(async () => {
-        if (!containerRef.current) return;
         try {
-            if (!document.fullscreenElement) {
-                if (containerRef.current.requestFullscreen) {
-                    await containerRef.current.requestFullscreen();
-                } else if ((containerRef.current as any).webkitRequestFullscreen) {
-                    await (containerRef.current as any).webkitRequestFullscreen();
+            if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+                if (containerRef.current) {
+                    if (containerRef.current.requestFullscreen) {
+                        await containerRef.current.requestFullscreen();
+                    } else if ((containerRef.current as any).webkitRequestFullscreen) {
+                        await (containerRef.current as any).webkitRequestFullscreen();
+                    }
                 }
             } else {
                 if (document.exitFullscreen) {
@@ -165,7 +185,7 @@ export function ThirdPartyPlayer({
     // Listen to fullscreen changes across all browsers
     useEffect(() => {
         const handleFullscreenChange = () => {
-            setIsFullscreen(Boolean(document.fullscreenElement));
+            setIsFullscreen(Boolean(document.fullscreenElement || (document as any).webkitFullscreenElement));
         };
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -175,18 +195,22 @@ export function ThirdPartyPlayer({
         };
     }, []);
 
-    // Keyboard shortcut 'F' to toggle fullscreen without clicking the media player
+    // Keyboard shortcuts: 'F' or 'Escape' to toggle fullscreen
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (['input', 'textarea'].includes((e.target as HTMLElement)?.tagName?.toLowerCase())) return;
             if (e.key.toLowerCase() === 'f') {
                 e.preventDefault();
                 void toggleFullscreen();
+            } else if (e.key === 'Escape' && (document.fullscreenElement || (document as any).webkitFullscreenElement)) {
+                e.preventDefault();
+                void toggleFullscreen();
             }
         };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        window.addEventListener('keydown', handleKeyDown, true);
+        return () => window.removeEventListener('keydown', handleKeyDown, true);
     }, [toggleFullscreen]);
+
 
     let src: string;
     try {
