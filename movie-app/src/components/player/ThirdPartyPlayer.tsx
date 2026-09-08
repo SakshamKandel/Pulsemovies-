@@ -20,10 +20,10 @@ function PlayerFrame({
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [pending, setPending] = useState(true);
     const [failed, setFailed] = useState(false);
+    const [isInteracting, setIsInteracting] = useState(false);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        // A frame load event cannot tell us whether the provider can play the movie.
-        // Stop covering its UI after a short wait so its own errors remain visible.
         const timer = setTimeout(() => setPending(false), 12000);
         return () => clearTimeout(timer);
     }, []);
@@ -35,19 +35,33 @@ function PlayerFrame({
         }
     }, [src]);
 
-    // Give focus to iframe on mouse enter so keys work without requiring an ad-triggering mouse click
-    const handleMouseEnter = () => {
-        try {
-            iframeRef.current?.focus();
-        } catch {
-            /* ignore focus error */
-        }
+    // Handle mouse wheel over the media player to allow page scrolling
+    const handleWheel = (e: React.WheelEvent) => {
+        window.scrollBy({
+            top: e.deltaY,
+            left: e.deltaX,
+            behavior: 'auto',
+        });
+    };
+
+    // Unlock direct video interaction on click/tap, and re-enable scrolling on leave or inactivity
+    const handlePointerDown = () => {
+        setIsInteracting(true);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+            setIsInteracting(false);
+        }, 4000);
+    };
+
+    const handleMouseLeave = () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        setIsInteracting(false);
     };
 
     return (
         <div
             ref={containerRef}
-            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             className="cinema-player-frame group relative aspect-video w-full bg-black overflow-hidden select-none"
         >
             <iframe
@@ -66,15 +80,27 @@ function PlayerFrame({
                 }}
             />
 
-            {/* Floating Fullscreen button on hover in top-right corner to avoid clicking inside the iframe */}
-            <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-auto">
+            {/* Transparent wheel-scroll layer: lets page scroll when mouse is over media player */}
+            {!isFullscreen && (
+                <div
+                    onWheel={handleWheel}
+                    onPointerDown={handlePointerDown}
+                    className={`absolute inset-0 z-10 ${
+                        isInteracting ? 'pointer-events-none' : 'pointer-events-auto cursor-pointer'
+                    }`}
+                    aria-hidden="true"
+                />
+            )}
+
+            {/* Floating Fullscreen button on hover in top-right corner */}
+            <div className="absolute top-3.5 right-3.5 z-30 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-auto">
                 <button
                     onClick={onToggleFullscreen}
-                    className="p-2 rounded-lg bg-black/75 hover:bg-black/95 text-white/80 hover:text-white backdrop-blur-md border border-white/15 transition-all shadow-xl hover:scale-105"
+                    className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-black/80 hover:bg-black text-white/90 hover:text-white backdrop-blur-md border border-white/20 transition-all shadow-2xl hover:scale-105 active:scale-95"
                     title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
                     aria-label={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                 >
-                    {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                    {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
                 </button>
             </div>
 
@@ -149,7 +175,7 @@ export function ThirdPartyPlayer({
         };
     }, []);
 
-    // Keyboard shortcut 'F' to toggle fullscreen without ever clicking the media player
+    // Keyboard shortcut 'F' to toggle fullscreen without clicking the media player
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (['input', 'textarea'].includes((e.target as HTMLElement)?.tagName?.toLowerCase())) return;
@@ -179,36 +205,31 @@ export function ThirdPartyPlayer({
                 onToggleFullscreen={toggleFullscreen}
                 containerRef={containerRef}
             />
-            <div className="flex items-center justify-between px-4 md:px-8 py-2.5 bg-black/90 border-t border-white/5">
-                <div className="flex items-center gap-2 text-xs text-zinc-400">
-                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-medium text-zinc-300">Server 1 (VidLink)</span>
-                </div>
-                <div className="flex items-center gap-2 sm:gap-3">
-                    {/* Fullscreen button right in the UI bar so user never has to click the media player to enter/exit fullscreen */}
-                    <button
-                        onClick={toggleFullscreen}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-violet-600 hover:bg-violet-500 active:bg-violet-700 rounded-md transition-colors shadow-sm"
-                        title={isFullscreen ? 'Exit Fullscreen (F)' : 'Enter Fullscreen (F)'}
-                        aria-label="Toggle Fullscreen"
-                    >
-                        {isFullscreen ? <Minimize size={13} /> : <Maximize size={13} />}
-                        <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'}</span>
-                    </button>
-                    <button
-                        onClick={() => setReload(count => count + 1)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
-                        aria-label="Reload player"
-                        title="Reload player"
-                    >
-                        <RefreshCw size={13} />
-                        <span className="hidden sm:inline">Reload</span>
-                    </button>
-                </div>
+            <div className="flex items-center justify-end gap-2 sm:gap-3 px-4 md:px-8 py-2.5 bg-black/90 border-t border-white/5">
+                {/* Fullscreen button in the UI bar */}
+                <button
+                    onClick={toggleFullscreen}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-violet-600 hover:bg-violet-500 active:bg-violet-700 rounded-md transition-colors shadow-sm"
+                    title={isFullscreen ? 'Exit Fullscreen (F)' : 'Enter Fullscreen (F)'}
+                    aria-label="Toggle Fullscreen"
+                >
+                    {isFullscreen ? <Minimize size={13} /> : <Maximize size={13} />}
+                    <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'}</span>
+                </button>
+                <button
+                    onClick={() => setReload(count => count + 1)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                    aria-label="Reload player"
+                    title="Reload player"
+                >
+                    <RefreshCw size={13} />
+                    <span className="hidden sm:inline">Reload</span>
+                </button>
             </div>
         </>
     );
 }
+
 
 
 
