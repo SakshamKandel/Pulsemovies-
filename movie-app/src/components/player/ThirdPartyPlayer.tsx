@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { getPlayerUrl } from '@/config/playerProviders';
 
@@ -11,15 +11,28 @@ function PlayerFrame({
     src: string;
     title: string;
 }) {
-    const iframeRef = useRef<HTMLIFrameElement>(null);
     const [pending, setPending] = useState(true);
     const [failed, setFailed] = useState(false);
-    const [isInteracting, setIsInteracting] = useState(false);
-    const interactTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-    const scrollVelocityRef = useRef(0);
-    const animIdRef = useRef<number | null>(null);
-
+    const [isPageScrolling, setIsPageScrolling] = useState(false);
+    useEffect(() => {
+        let idleTimer: ReturnType<typeof setTimeout> | undefined;
+        const onScroll = () => {
+            setIsPageScrolling(true);
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => setIsPageScrolling(false), 180);
+        };
+        const onWheel = (event: WheelEvent) => {
+            // Preserve browser zoom and ignore horizontal-only gestures.
+            if (!event.ctrlKey && event.deltaY !== 0) onScroll();
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('wheel', onWheel, { passive: true, capture: true });
+        return () => {
+            clearTimeout(idleTimer);
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('wheel', onWheel, true);
+        };
+    }, []);
     useEffect(() => {
         const timer = setTimeout(() => setPending(false), 12000);
         return () => clearTimeout(timer);
@@ -42,47 +55,11 @@ function PlayerFrame({
         };
     }, []);
 
-    // Silky-smooth momentum scrolling when mouse wheel is turned over the player iframe
-    const stepScroll = () => {
-        if (Math.abs(scrollVelocityRef.current) > 0.5) {
-            window.scrollBy(0, scrollVelocityRef.current * 0.22);
-            scrollVelocityRef.current *= 0.82;
-            animIdRef.current = requestAnimationFrame(stepScroll);
-        } else {
-            scrollVelocityRef.current = 0;
-            animIdRef.current = null;
-        }
-    };
-
-    const handleWheel = (e: React.WheelEvent) => {
-        e.preventDefault();
-        scrollVelocityRef.current += e.deltaY;
-        if (animIdRef.current === null) {
-            animIdRef.current = requestAnimationFrame(stepScroll);
-        }
-    };
-
-    // On desktop click/tap, momentarily yield pointer events to video controls
-    const handlePointerDown = () => {
-        setIsInteracting(true);
-        if (interactTimeoutRef.current) clearTimeout(interactTimeoutRef.current);
-        interactTimeoutRef.current = setTimeout(() => {
-            setIsInteracting(false);
-        }, 3500);
-    };
-
-    const handleMouseLeave = () => {
-        if (interactTimeoutRef.current) clearTimeout(interactTimeoutRef.current);
-        setIsInteracting(false);
-    };
-
     return (
         <div
-            onMouseLeave={handleMouseLeave}
             className="cinema-player-frame relative w-full aspect-video bg-black overflow-hidden select-none"
         >
             <iframe
-                ref={iframeRef}
                 key={src}
                 src={src}
                 title={title}
@@ -97,15 +74,9 @@ function PlayerFrame({
                 }}
             />
 
-            {/* Desktop-only smooth scroll overlay: provides silky momentum scrolling on mouse wheel hover */}
-            <div
-                onWheel={handleWheel}
-                onPointerDown={handlePointerDown}
-                className={`hidden md:block absolute inset-0 z-10 ${
-                    isInteracting ? 'pointer-events-none' : 'pointer-events-auto cursor-pointer'
-                }`}
-                aria-hidden="true"
-            />
+            {/* Continue page scrolling across the iframe, then return pointer input
+                to the video controls as soon as scrolling settles. */}
+            {isPageScrolling && <div className="absolute inset-0 z-10 touch-pan-y bg-transparent" aria-hidden="true" />}
 
             {pending && (
                 <div
