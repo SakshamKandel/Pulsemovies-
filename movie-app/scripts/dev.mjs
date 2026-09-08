@@ -1,4 +1,12 @@
 import { spawn } from 'node:child_process';
+import { access } from 'node:fs/promises';
+
+try {
+  for (const name of ['easylist', 'easyprivacy', 'ublock']) await access(new URL(`./filter-cache/${name}.txt`, import.meta.url));
+} catch {
+  console.log('Downloading player ad-filter lists...');
+  await import('./update-ad-filters.mjs');
+}
 
 const children = [];
 let stopping = false;

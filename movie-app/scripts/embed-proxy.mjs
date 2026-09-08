@@ -2,6 +2,10 @@ import http from 'node:http';
 import https from 'node:https';
 import { lookup } from 'node:dns/promises';
 import { createEmbedGuardHandler } from 'aetherly-embed-guard';
+import { loadAdFilter, filterHtml } from './ad-filter.mjs';
+
+let adFilter;
+if (process.env.EMBED_PROXY_TEST !== '1') adFilter = await loadAdFilter();
 
 const hosts = new Set(['vidlink.pro', 'player.videasy.to', 'vidsrc.to']);
 const port = Number(process.env.EMBED_PROXY_PORT || 3001);
@@ -18,6 +22,8 @@ export function publicIPv4(ip) {
 // authentication headers, or arbitrary upstream hosts are forwarded.
 export async function boundedFetch(input, options = {}, hops = 0) {
   const url = new URL(input);
+  const sourceUrl = options.headers?.Referer || url.origin;
+  if (adFilter?.check(url.href, sourceUrl, 'xmlhttprequest')) return new Response(null, { status: 204 });
   if (url.protocol !== 'https:' || url.port || url.username || url.password || !hosts.has(url.hostname)) throw new Error('Host not allowed');
   const addresses = (await lookup(url.hostname, { family: 4, all: true })).map(entry => entry.address);
   if (!addresses.length || addresses.some(ip => !publicIPv4(ip))) throw new Error('Address not allowed');
@@ -50,6 +56,10 @@ export async function boundedFetch(input, options = {}, hops = 0) {
   if ([301, 302, 303, 307, 308].includes(response.status)) {
     if (hops >= 3 || !response.headers.get('location')) throw new Error('Redirect limit');
     return boundedFetch(new URL(response.headers.get('location'), url), options, hops + 1);
+  }
+  if (adFilter && response.headers.get('content-type')?.includes('text/html')) {
+    const filtered = filterHtml(await response.text(), url.href, adFilter);
+    return new Response(filtered.html, { status: response.status, headers: { 'content-type': 'text/html; charset=utf-8' } });
   }
   return response;
 }

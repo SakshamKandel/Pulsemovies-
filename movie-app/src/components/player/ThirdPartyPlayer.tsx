@@ -112,6 +112,9 @@ export function ThirdPartyPlayer({
     title?: string;
 }) {
     const [reload, setReload] = useState(0);
+    const [filtered, setFiltered] = useState(false);
+    const [proxyAvailable, setProxyAvailable] = useState(false);
+    useEffect(() => { setProxyAvailable(window.location.hostname === 'localhost'); }, []);
 
     let rawUrl: string;
     try {
@@ -120,7 +123,7 @@ export function ThirdPartyPlayer({
         return <p className="p-8 text-zinc-400" role="alert">This title or episode is unavailable.</p>;
     }
 
-    const src = rawUrl;
+    const src = filtered && proxyAvailable ? `http://127.0.0.1:3001/embed?url=${encodeURIComponent(rawUrl)}` : rawUrl;
 
     return (
         <>
@@ -130,6 +133,10 @@ export function ThirdPartyPlayer({
                 title={`${title || 'Movie'} — player`}
             />
             <div className="flex items-center justify-end px-4 md:px-8 py-2.5 bg-black/90 border-t border-white/5">
+                {proxyAvailable && <button type="button" onClick={() => setFiltered(value => !value)} aria-pressed={filtered}
+                    className="mr-auto px-3 py-1.5 text-xs text-violet-300 hover:text-white">
+                    {filtered ? 'Filtered playback · Switch to direct' : 'Try filtered playback'}
+                </button>}
                 <button
                     onClick={() => setReload(count => count + 1)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
@@ -140,6 +147,7 @@ export function ThirdPartyPlayer({
                     <span>Reload</span>
                 </button>
             </div>
+            {filtered && <p className="px-4 pb-3 text-xs text-zinc-400">Experimental ad filtering. This provider may refuse playback; nested-player ads may still appear.</p>}
         </>
     );
 }
