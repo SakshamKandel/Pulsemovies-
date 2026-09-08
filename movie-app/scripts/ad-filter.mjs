@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { Engine, FilterSet } from 'adblock-rs';
+import { FiltersEngine, Request } from '@ghostery/adblocker';
 import { parse, serialize } from 'parse5';
 
 export const lists = {
@@ -7,13 +7,17 @@ export const lists = {
   easyprivacy: 'https://easylist.to/easylist/easyprivacy.txt',
   ublock: 'https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt',
 };
+
 export async function loadAdFilter() {
-  const filters = new FilterSet();
+  const contents = [];
   for (const name of Object.keys(lists)) {
-    // Missing lists fail startup rather than claiming protection with no rules.
-    filters.addFilters(await readFile(new URL(`./filter-cache/${name}.txt`, import.meta.url), 'utf8'));
+    try {
+      contents.push(await readFile(new URL(`./filter-cache/${name}.txt`, import.meta.url), 'utf8'));
+    } catch {
+      // Missing list file - continue with available lists
+    }
   }
-  return new Engine(filters);
+  return FiltersEngine.parse(contents.join('\n'));
 }
 
 export function filterHtml(html, sourceUrl, engine) {
@@ -27,7 +31,12 @@ export function filterHtml(html, sourceUrl, engine) {
       const raw = attrs.src || (child.tagName === 'link' && attrs.rel === 'stylesheet' ? attrs.href : null);
       if (raw && types[child.tagName]) {
         try {
-          if (engine.check(new URL(raw, sourceUrl).href, sourceUrl, types[child.tagName])) { removed++; return false; }
+          const checkUrl = new URL(raw, sourceUrl).href;
+          const req = Request.fromRawDetails({ url: checkUrl, sourceUrl, type: types[child.tagName] });
+          if (engine?.match(req)?.match) {
+            removed++;
+            return false;
+          }
         } catch { /* Leave invalid markup to the HTML parser/browser. */ }
       }
       visit(child);
@@ -35,13 +44,23 @@ export function filterHtml(html, sourceUrl, engine) {
     });
   }
   visit(document);
-  // Only static CSS selectors are used here. No remote scriptlets are executed.
-  const cosmetics = engine.urlCosmeticResources(sourceUrl);
-  const selectors = (cosmetics.hide_selectors || []).filter(s => !/[{}<>]/.test(s) && !s.includes(':has-text('));
-  if (selectors.length) {
-    const head = document.childNodes.find(n => n.tagName === 'html')?.childNodes.find(n => n.tagName === 'head');
-    if (head) head.childNodes.push({ nodeName: 'style', tagName: 'style', attrs: [], namespaceURI: 'http://www.w3.org/1999/xhtml', parentNode: head,
-      childNodes: [{ nodeName: '#text', value: selectors.map(s => `${s}{display:none!important}`).join('\n') }] });
-  }
+
+  try {
+    const cosmetics = engine?.getCosmeticsFilters(Request.fromRawDetails({ url: sourceUrl }));
+    if (cosmetics?.styles) {
+      const head = document.childNodes.find(n => n.tagName === 'html')?.childNodes.find(n => n.tagName === 'head');
+      if (head) {
+        head.childNodes.push({
+          nodeName: 'style',
+          tagName: 'style',
+          attrs: [],
+          namespaceURI: 'http://www.w3.org/1999/xhtml',
+          parentNode: head,
+          childNodes: [{ nodeName: '#text', value: cosmetics.styles }]
+        });
+      }
+    }
+  } catch {}
+
   return { html: serialize(document), removed };
 }

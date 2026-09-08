@@ -2,6 +2,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { lookup } from 'node:dns/promises';
 import { createEmbedGuardHandler } from 'aetherly-embed-guard';
+import { Request } from '@ghostery/adblocker';
 import { loadAdFilter, filterHtml } from './ad-filter.mjs';
 
 let adFilter;
@@ -23,7 +24,7 @@ export function publicIPv4(ip) {
 export async function boundedFetch(input, options = {}, hops = 0) {
   const url = new URL(input);
   const sourceUrl = options.headers?.Referer || url.origin;
-  if (adFilter?.check(url.href, sourceUrl, 'xmlhttprequest')) return new Response(null, { status: 204 });
+  if (adFilter?.match(Request.fromRawDetails({ url: url.href, sourceUrl, type: 'xmlhttprequest' }))?.match) return new Response(null, { status: 204 });
   if (url.protocol !== 'https:' || url.port || url.username || url.password || !hosts.has(url.hostname)) throw new Error('Host not allowed');
   const addresses = (await lookup(url.hostname, { family: 4, all: true })).map(entry => entry.address);
   if (!addresses.length || addresses.some(ip => !publicIPv4(ip))) throw new Error('Address not allowed');
