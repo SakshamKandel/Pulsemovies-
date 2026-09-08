@@ -14,56 +14,73 @@ function PlayerFrame({
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [pending, setPending] = useState(true);
     const [failed, setFailed] = useState(false);
+    const [isInteracting, setIsInteracting] = useState(false);
+    const interactTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const scrollVelocityRef = useRef(0);
+    const animIdRef = useRef<number | null>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => setPending(false), 12000);
         return () => clearTimeout(timer);
     }, []);
 
+    // Defuse window.open in the top window so embedded frames cannot use top.open/parent.open to launch ads
     useEffect(() => {
-        // Ensure iframe has NO sandbox attribute so window.frameElement.sandbox detection cannot trigger
-        if (iframeRef.current) {
-            iframeRef.current.removeAttribute('sandbox');
+        const origOpen = window.open;
+        try {
+            window.open = () => null;
+        } catch {
+            /* ignore */
         }
-    }, [src]);
-
-    // Silky-smooth momentum scrolling bridge when mouse wheel is turned over the player iframe
-    useEffect(() => {
-        let scrollVelocity = 0;
-        let animationFrameId: number | null = null;
-
-        const stepScroll = () => {
-            if (Math.abs(scrollVelocity) > 0.5) {
-                window.scrollBy(0, scrollVelocity * 0.22);
-                scrollVelocity *= 0.82;
-                animationFrameId = requestAnimationFrame(stepScroll);
-            } else {
-                scrollVelocity = 0;
-                animationFrameId = null;
-            }
-        };
-
-        const handleMessage = (e: MessageEvent) => {
-            if (e.data && e.data.type === 'PULSE_WHEEL_SCROLL') {
-                const delta = typeof e.data.deltaY === 'number' ? e.data.deltaY : 0;
-                if (delta) {
-                    scrollVelocity += delta;
-                    if (animationFrameId === null) {
-                        animationFrameId = requestAnimationFrame(stepScroll);
-                    }
-                }
-            }
-        };
-
-        window.addEventListener('message', handleMessage);
         return () => {
-            window.removeEventListener('message', handleMessage);
-            if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
+            try {
+                window.open = origOpen;
+            } catch {
+                /* ignore */
+            }
         };
     }, []);
 
+    // Silky-smooth momentum scrolling when mouse wheel is turned over the player iframe
+    const stepScroll = () => {
+        if (Math.abs(scrollVelocityRef.current) > 0.5) {
+            window.scrollBy(0, scrollVelocityRef.current * 0.22);
+            scrollVelocityRef.current *= 0.82;
+            animIdRef.current = requestAnimationFrame(stepScroll);
+        } else {
+            scrollVelocityRef.current = 0;
+            animIdRef.current = null;
+        }
+    };
+
+    const handleWheel = (e: React.WheelEvent) => {
+        e.preventDefault();
+        scrollVelocityRef.current += e.deltaY;
+        if (animIdRef.current === null) {
+            animIdRef.current = requestAnimationFrame(stepScroll);
+        }
+    };
+
+    // On desktop click/tap, momentarily yield pointer events to video controls
+    const handlePointerDown = () => {
+        setIsInteracting(true);
+        if (interactTimeoutRef.current) clearTimeout(interactTimeoutRef.current);
+        interactTimeoutRef.current = setTimeout(() => {
+            setIsInteracting(false);
+        }, 3500);
+    };
+
+    const handleMouseLeave = () => {
+        if (interactTimeoutRef.current) clearTimeout(interactTimeoutRef.current);
+        setIsInteracting(false);
+    };
+
     return (
-        <div className="cinema-player-frame relative w-full aspect-video bg-black overflow-hidden select-none">
+        <div
+            onMouseLeave={handleMouseLeave}
+            className="cinema-player-frame relative w-full aspect-video bg-black overflow-hidden select-none"
+        >
             <iframe
                 ref={iframeRef}
                 key={src}
@@ -78,6 +95,16 @@ function PlayerFrame({
                     setPending(false);
                     setFailed(true);
                 }}
+            />
+
+            {/* Desktop-only smooth scroll overlay: provides silky momentum scrolling on mouse wheel hover */}
+            <div
+                onWheel={handleWheel}
+                onPointerDown={handlePointerDown}
+                className={`hidden md:block absolute inset-0 z-10 ${
+                    isInteracting ? 'pointer-events-none' : 'pointer-events-auto cursor-pointer'
+                }`}
+                aria-hidden="true"
             />
 
             {pending && (
@@ -122,8 +149,7 @@ export function ThirdPartyPlayer({
         return <p className="p-8 text-zinc-400" role="alert">This title or episode is unavailable.</p>;
     }
 
-    // Load through /proxy with Brave's adblock-rust engine and strict mobile defense
-    const src = `/proxy?url=${encodeURIComponent(rawUrl)}`;
+    const src = rawUrl;
 
     return (
         <>
