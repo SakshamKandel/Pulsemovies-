@@ -65,6 +65,7 @@ export function WatchPageClient({ movie, similar, logo }: WatchPageClientProps) 
                         <div className="watch-stage overflow-hidden">
 
                             <PlayerEmbed
+                                historyItem={{ ...movie, genre_ids: movie.genres.map(genre => genre.id) }}
                                 tmdbId={movie.id}
                                 type="movie"
                                 movieTitle={movie.title}

@@ -95,6 +95,7 @@ export default async function WatchTVPage({ params, searchParams }: Props) {
                         {/* Player Wrapper */}
                         <div className="w-full mb-8">
                             <PlayerEmbed
+                                historyItem={{ ...show, genre_ids: show.genres.map(genre => genre.id) }}
                                 tmdbId={show.id}
                                 type="tv"
                                 season={seasonNumber}

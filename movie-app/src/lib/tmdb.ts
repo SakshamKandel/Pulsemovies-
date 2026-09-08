@@ -411,5 +411,10 @@ export async function getAnniversaryReleases(): Promise<MovieListResponse> {
     };
 }
 
+export async function getExternalIds(id: number, type: 'movie' | 'tv'): Promise<{ imdb_id?: string }> {
+    const response = await tmdbApi.get(`/${type}/${id}/external_ids`);
+    return response.data;
+}
+
 export { tmdbApi };
 

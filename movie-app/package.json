@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node --max-old-space-size=1536 node_modules/next/dist/bin/next dev --webpack",
+    "dev": "node scripts/dev.mjs",
+    "dev:proxy": "node --max-old-space-size=128 scripts/embed-proxy.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -24,6 +25,7 @@
     "@tanstack/react-query": "^5.90.18",
     "@types/three": "^0.182.0",
     "@use-gesture/react": "^10.3.1",
+    "aetherly-embed-guard": "0.1.0",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",

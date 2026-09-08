@@ -1,5 +1,6 @@
 'use client';
 
+import { PopupBlocker } from './PopupBlocker';
 import { usePathname } from 'next/navigation';
 import { TrailerProvider } from '@/components/movie/TrailerProvider';
 import { TrailerRail } from '@/components/movie/TrailerRail';
@@ -17,7 +18,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <ProfileGate>
+        <><PopupBlocker /><ProfileGate>
             <TrailerProvider><div className="site-shell min-h-screen flex flex-col">
                 <a href="#page-content" className="skip-link">Skip to content</a>
                 <Navbar />
@@ -25,6 +26,6 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
                 {!pathname?.startsWith('/pulses') && !pathname?.endsWith('/watch') && !['/login', '/signup', '/who-is-watching', '/about', '/terms'].includes(pathname || '') && <TrailerRail key={pathname} />}
                 <Footer />
             </div></TrailerProvider>
-        </ProfileGate>
+        </ProfileGate></>
     );
 }
