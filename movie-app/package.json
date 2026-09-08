@@ -25,7 +25,6 @@
     "@tanstack/react-query": "^5.90.18",
     "@types/three": "^0.182.0",
     "@use-gesture/react": "^10.3.1",
-    "adblock-rs": "0.13.3",
     "aetherly-embed-guard": "0.1.0",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
