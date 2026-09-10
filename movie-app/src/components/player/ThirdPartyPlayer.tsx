@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Loader2, RefreshCw } from 'lucide-react';
-import { getPlayerUrl, PLAYER_PROVIDERS, type PlayerProvider } from '@/config/playerProviders';
+import { getPlayerUrl } from '@/config/playerProviders';
 
 function PlayerFrame({
     src,
@@ -93,7 +93,7 @@ function PlayerFrame({
                     className="absolute inset-0 bg-black flex items-center justify-center p-6 text-center text-sm text-zinc-400"
                     role="alert"
                 >
-                    This player couldn’t load. Please reload or switch server.
+                    This player couldn’t load. Please reload or try again later.
                 </div>
             )}
         </div>
@@ -114,11 +114,10 @@ export function ThirdPartyPlayer({
     title?: string;
 }) {
     const [reload, setReload] = useState(0);
-    const [provider, setProvider] = useState<PlayerProvider>('vidlink');
 
     let src: string;
     try {
-        src = getPlayerUrl(provider, tmdbId, type, season, episode);
+        src = getPlayerUrl('vidking', tmdbId, type, season, episode);
     } catch {
         return <p className="p-8 text-zinc-400" role="alert">This title or episode is unavailable.</p>;
     }
@@ -130,26 +129,7 @@ export function ThirdPartyPlayer({
                 src={src}
                 title={`${title || 'Movie'} — player`}
             />
-            <div className="flex flex-wrap gap-2 items-center justify-between px-4 md:px-8 py-2.5 bg-black/90 border-t border-white/5">
-                <div className="flex items-center gap-2" role="group" aria-label="Playback server">
-                    <span className="text-xs text-zinc-400 font-medium mr-1">Server:</span>
-                    {PLAYER_PROVIDERS.map(item => (
-                        <button
-                            key={item.id}
-                            type="button"
-                            aria-pressed={provider === item.id}
-                            disabled={!item.available}
-                            onClick={() => setProvider(item.id)}
-                            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                                provider === item.id
-                                    ? 'bg-violet-600 text-white shadow-sm ring-1 ring-violet-500/50'
-                                    : 'bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'
-                            }`}
-                        >
-                            {item.label}
-                        </button>
-                    ))}
-                </div>
+            <div className="flex items-center justify-end px-4 md:px-8 py-2.5 bg-black/90 border-t border-white/5">
                 <button
                     onClick={() => setReload(count => count + 1)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
@@ -160,9 +140,6 @@ export function ThirdPartyPlayer({
                     <span>Reload</span>
                 </button>
             </div>
-            <p className="px-4 md:px-8 pb-3 text-xs text-zinc-500">
-                Primary server: JW Player. Secondary server: VidKing. Switch servers or click Reload if you experience issues.
-            </p>
         </>
     );
 }

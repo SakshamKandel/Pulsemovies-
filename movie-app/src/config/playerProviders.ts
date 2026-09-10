@@ -1,11 +1,11 @@
 export const PLAYER_PROVIDERS = [
-    { id: 'vidlink', label: 'Server 1 (JW Player)', origin: 'https://vidlink.pro', available: true },
-    { id: 'vidking', label: 'Server 2 (VidKing)', origin: 'https://www.vidking.net', available: true },
+    { id: 'vidking', label: 'VidKing', origin: 'https://www.vidking.net', available: true },
+    { id: 'vidlink', label: 'JW Player', origin: 'https://vidlink.pro', available: true },
 ] as const;
 
 export type PlayerProvider = typeof PLAYER_PROVIDERS[number]['id'];
 
-export function getPlayerUrl(provider: PlayerProvider = 'vidlink', id: number, type: 'movie' | 'tv', season = 1, episode = 1): string {
+export function getPlayerUrl(provider: PlayerProvider = 'vidking', id: number, type: 'movie' | 'tv', season = 1, episode = 1): string {
     if (!Number.isSafeInteger(id) || id <= 0 || (type === 'tv' && (!Number.isSafeInteger(season) || season < 1 || !Number.isSafeInteger(episode) || episode < 1))) {
         throw new Error('Invalid title or episode');
     }
