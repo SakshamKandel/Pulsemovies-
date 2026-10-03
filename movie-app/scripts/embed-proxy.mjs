@@ -84,7 +84,7 @@ export const server = http.createServer(async (req, res) => {
       'Content-Type': response.headers.get('content-type') || 'text/plain',
       'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
       'Referrer-Policy': 'no-referrer',
-      'Content-Security-Policy': "frame-ancestors http://localhost:3000; object-src 'none'",
+      'Content-Security-Policy': "frame-ancestors http://localhost:3000 http://127.0.0.1:3000; object-src 'none'",
     });
     res.end(Buffer.from(await response.arrayBuffer()));
   } catch { res.writeHead(502, { 'Content-Type': 'text/plain' }).end('Player proxy unavailable. Try another server or direct playback.'); }

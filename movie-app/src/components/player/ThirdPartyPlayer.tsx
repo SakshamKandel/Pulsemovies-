@@ -145,7 +145,10 @@ export function ThirdPartyPlayer({
         return <p className="p-8 text-zinc-400" role="alert">This title or episode is unavailable.</p>;
     }
 
-    const src = rawUrl;
+    const proxyOrigin = process.env.NEXT_PUBLIC_EMBED_PROXY_ORIGIN?.replace(/\/$/, '');
+    const src = proxyOrigin
+        ? `${proxyOrigin}/proxy?url=${encodeURIComponent(rawUrl)}`
+        : rawUrl;
 
     return (
         <>
