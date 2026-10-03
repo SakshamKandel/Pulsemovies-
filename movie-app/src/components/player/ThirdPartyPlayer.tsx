@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2, RefreshCw } from 'lucide-react';
-import { getPlayerUrl } from '@/config/playerProviders';
+import { Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
+import { getPlayerUrl, PLAYER_PROVIDERS, type PlayerProvider } from '@/config/playerProviders';
 
 function PlayerFrame({
     src,
@@ -23,7 +23,6 @@ function PlayerFrame({
             idleTimer = setTimeout(() => setIsPageScrolling(false), 180);
         };
         const onWheel = (event: WheelEvent) => {
-            // Preserve browser zoom and ignore horizontal-only gestures.
             if (!event.ctrlKey && event.deltaY !== 0) onScroll();
         };
         window.addEventListener('scroll', onScroll, { passive: true });
@@ -38,6 +37,21 @@ function PlayerFrame({
     useEffect(() => {
         const timer = setTimeout(() => setPending(false), 12000);
         return () => clearTimeout(timer);
+    }, []);
+
+    // Listen for wheel events bridged from inside the player iframe
+    useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data?.type === 'PULSE_WHEEL_SCROLL') {
+                window.scrollBy({
+                    top: event.data.deltaY || 0,
+                    left: event.data.deltaX || 0,
+                    behavior: 'auto',
+                });
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
     }, []);
 
     // Defuse window.open in the top window so embedded frames cannot use top.open/parent.open to launch ads
@@ -93,7 +107,7 @@ function PlayerFrame({
                     className="absolute inset-0 bg-black flex items-center justify-center p-6 text-center text-sm text-zinc-400"
                     role="alert"
                 >
-                    This player couldn’t load. Please reload or try again later.
+                    This player couldn’t load. Please reload or switch server.
                 </div>
             )}
         </div>
@@ -114,13 +128,21 @@ export function ThirdPartyPlayer({
     title?: string;
 }) {
     const [reload, setReload] = useState(0);
+    const [provider, setProvider] = useState<PlayerProvider>('vidlink');
+    const [useAdblock, setUseAdblock] = useState(true);
 
-    let src: string;
+    let rawUrl: string;
     try {
-        src = getPlayerUrl('vidking', tmdbId, type, season, episode);
+        rawUrl = getPlayerUrl(provider, tmdbId, type, season, episode);
     } catch {
         return <p className="p-8 text-zinc-400" role="alert">This title or episode is unavailable.</p>;
     }
+
+    // In Adblocker mode, use the in-app proxy that strips ad scripts and injects the guard script.
+    // In Direct mode, load the upstream URL directly. Neither mode sets the iframe sandbox attribute.
+    const src = useAdblock
+        ? `/proxy?url=${encodeURIComponent(rawUrl)}`
+        : rawUrl;
 
     return (
         <>
@@ -129,17 +151,54 @@ export function ThirdPartyPlayer({
                 src={src}
                 title={`${title || 'Movie'} — player`}
             />
-            <div className="flex items-center justify-end px-4 md:px-8 py-2.5 bg-black/90 border-t border-white/5">
-                <button
-                    onClick={() => setReload(count => count + 1)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
-                    aria-label="Reload player"
-                    title="Reload player"
-                >
-                    <RefreshCw size={13} />
-                    <span>Reload</span>
-                </button>
+            <div className="flex flex-wrap gap-2 items-center justify-between px-4 md:px-8 py-2.5 bg-black/90 border-t border-white/5">
+                <div className="flex items-center gap-2" role="group" aria-label="Playback server">
+                    <span className="text-xs text-zinc-400 font-medium mr-1">Server:</span>
+                    {PLAYER_PROVIDERS.map(item => (
+                        <button
+                            key={item.id}
+                            type="button"
+                            aria-pressed={provider === item.id}
+                            disabled={!item.available}
+                            onClick={() => setProvider(item.id)}
+                            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                                provider === item.id
+                                    ? 'bg-violet-600 text-white shadow-sm ring-1 ring-violet-500/50'
+                                    : 'bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'
+                            }`}
+                        >
+                            {item.label}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setUseAdblock(v => !v)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                            useAdblock
+                                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
+                        }`}
+                        title={useAdblock ? 'Ad blocker is active (no sandbox, zero popups)' : 'Direct mode without ad blocker'}
+                    >
+                        <ShieldCheck size={13} className={useAdblock ? 'text-emerald-400' : 'text-zinc-500'} />
+                        <span>{useAdblock ? 'Adblocker: Active' : 'Direct Stream'}</span>
+                    </button>
+                    <button
+                        onClick={() => setReload(count => count + 1)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                        aria-label="Reload player"
+                        title="Reload player"
+                    >
+                        <RefreshCw size={13} />
+                        <span>Reload</span>
+                    </button>
+                </div>
             </div>
+            <p className="px-4 md:px-8 pb-3 text-xs text-zinc-500">
+                Primary server: JW Player. Secondary server: VidKing. Built-in adblocker neutralizes popups without triggering sandbox detection.
+            </p>
         </>
     );
 }

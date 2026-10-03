@@ -11,6 +11,11 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+// Movie metadata is fetched from TMDB at request time. Keeping the app
+// dynamic prevents Cloudflare builds from failing when TMDB is unavailable
+// during static prerendering.
+export const dynamic = "force-dynamic";
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -48,7 +53,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={inter.variable} data-scroll-behavior="smooth">
       <body className="bg-background text-text-primary antialiased" suppressHydrationWarning>
         <Providers>
           <LayoutWrapper>{children}</LayoutWrapper>

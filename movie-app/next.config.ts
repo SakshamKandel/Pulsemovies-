@@ -10,7 +10,7 @@ const cspHeader = `
   base-uri 'self';
   form-action 'self';
   frame-src 'self' https://vidlink.pro https://*.vidlink.pro https://www.vidking.net https://vidking.net https://*.vidking.net https://www.youtube.com https://youtube.com;
-  connect-src 'self' https://api.themoviedb.org https://image.tmdb.org https://vidsrc.cc https://torrentio.strem.fun;
+  connect-src 'self' https://api.themoviedb.org https://image.tmdb.org https://vidsrc.cc https://torrentio.strem.fun https://api.videasy.net https://*.videasy.net https://*.vidking.net;
   media-src 'self' blob: https:;
 `.replace(/\s{2,}/g, ' ').trim();
 
