@@ -39,6 +39,14 @@ function PlayerFrame({
         return () => clearTimeout(timer);
     }, []);
 
+    // Keep the player unsandboxed for provider compatibility, but prevent
+    // popup attempts that target the host page itself.
+    useEffect(() => {
+        const open = window.open;
+        window.open = () => null;
+        return () => { window.open = open; };
+    }, []);
+
     // Listen for wheel events bridged from inside the player iframe
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
