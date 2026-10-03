@@ -146,9 +146,9 @@ export function ThirdPartyPlayer({
                 src={src}
                 title={`${title || 'Movie'} — player`}
             />
-            <div className="flex flex-wrap gap-2 items-center justify-between px-4 md:px-8 py-2.5 bg-black/90 border-t border-white/5">
+            <div className="flex items-center justify-between px-4 md:px-8 py-2 bg-black/90 border-t border-white/5">
                 <div className="flex items-center gap-2" role="group" aria-label="Playback server">
-                    <span className="text-xs text-zinc-400 font-medium mr-1">Server:</span>
+                    <span className="text-[11px] uppercase tracking-wider text-zinc-500">Player</span>
                     {PLAYER_PROVIDERS.map(item => (
                         <button
                             key={item.id}
@@ -156,7 +156,7 @@ export function ThirdPartyPlayer({
                             aria-pressed={provider === item.id}
                             disabled={!item.available}
                             onClick={() => setProvider(item.id)}
-                            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                                 provider === item.id
                                     ? 'bg-violet-600 text-white shadow-sm ring-1 ring-violet-500/50'
                                     : 'bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'
